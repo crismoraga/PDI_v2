@@ -14,6 +14,7 @@ def configure_styles(root: tk.Tk) -> None:
     except tk.TclError:  # pragma: no cover - depends on OS themes
         pass
 
+    # Accent button with gradient effect
     style.configure(
         "Accent.TButton",
         background=config.ACCENT_COLOR,
@@ -21,10 +22,27 @@ def configure_styles(root: tk.Tk) -> None:
         font=("Segoe UI", 14, "bold"),
         padding=12,
         borderwidth=0,
+        relief="flat"
     )
     style.map(
         "Accent.TButton",
-        background=[("pressed", "#942a6b"), ("active", "#c54d93")],
+        background=[("pressed", "#7e2257"), ("active", "#d14591"), ("disabled", "#cccccc")],
+        foreground=[("disabled", "#666666")]
+    )
+    
+    # Success button (for auto-capture)
+    style.configure(
+        "Success.TButton",
+        background="#22c55e",
+        foreground="white",
+        font=("Segoe UI", 12, "bold"),
+        padding=10,
+        borderwidth=0,
+        relief="flat"
+    )
+    style.map(
+        "Success.TButton",
+        background=[("pressed", "#16a34a"), ("active", "#4ade80")]
     )
 
     style.configure(
@@ -71,6 +89,42 @@ def configure_styles(root: tk.Tk) -> None:
         background=config.PANEL_BACKGROUND,
         foreground="#1f2937",
         font=("Segoe UI", 12),
+    )
+    # Achievement label
+    style.configure(
+        "Achievement.TLabel",
+        background=config.PANEL_BACKGROUND,
+        foreground="#059669",
+        font=("Segoe UI", 11, "bold"),
+    )
+    # Location label
+    style.configure(
+        "Location.TLabel",
+        background=config.PANEL_BACKGROUND,
+        foreground="#0891b2",
+        font=("Segoe UI", 10),
+    )
+    
+    # Notebook (Tabs) - Pokédex style
+    style.configure(
+        "TNotebook",
+        background=config.PANEL_BACKGROUND,
+        borderwidth=0,
+        tabmargins=[2, 5, 2, 0]
+    )
+    style.configure(
+        "TNotebook.Tab",
+        background="#e2e8f0",
+        foreground="#334155",
+        padding=[20, 10],
+        font=("Segoe UI", 11, "bold"),
+        borderwidth=0
+    )
+    style.map(
+        "TNotebook.Tab",
+        background=[("selected", config.HEADER_BACKGROUND), ("active", "#cbd5e1")],
+        foreground=[("selected", "white"), ("active", "#1e293b")],
+        expand=[("selected", [1, 1, 1, 0])]
     )
 
 

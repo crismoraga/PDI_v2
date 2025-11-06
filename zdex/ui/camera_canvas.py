@@ -31,7 +31,9 @@ class CameraCanvas(ttk.Frame):
         self._current_boxes: list[int] = []
         self._flash_tag = "capture_flash"
         self._status_tag = "status_indicator"
+        self._countdown_tag = "auto_capture_countdown"
         self._frame_count = 0
+        self._auto_capture_time_remaining: float | None = None
 
     def render(self, frame_bgr: np.ndarray, detections: Sequence[DetectionResult] = ()) -> None:
         if frame_bgr is None:
@@ -43,9 +45,9 @@ class CameraCanvas(ttk.Frame):
         self._canvas.create_image(0, 0, anchor="nw", image=self._photo, tags="frame")
         self._draw_overlays(detections, scale, offset_x, offset_y)
         
-        # Status indicator: green dot when detecting
+        # Status indicator: green pulsing dot when detecting
         self._canvas.delete(self._status_tag)
-        color = "#22c55e" if detections else "#94a3b8"
+        color = config.DETECTION_PULSE_COLOR if detections else "#94a3b8"
         self._canvas.create_oval(
             10, 10, 26, 26,
             fill=color,
@@ -62,6 +64,32 @@ class CameraCanvas(ttk.Frame):
             font=("Segoe UI", 10),
             tags=(self._status_tag,)
         )
+        
+        # Auto-capture countdown
+        self._canvas.delete(self._countdown_tag)
+        if self._auto_capture_time_remaining is not None and self._auto_capture_time_remaining > 0:
+            center_x = self._width // 2
+            center_y = self._height // 2
+            countdown_text = f"Auto-captura en {int(self._auto_capture_time_remaining)}s..."
+            
+            # Semi-transparent background
+            self._canvas.create_rectangle(
+                center_x - 150, center_y - 60,
+                center_x + 150, center_y - 10,
+                fill="#000000",
+                stipple="gray75",
+                outline="",
+                tags=(self._countdown_tag,)
+            )
+            
+            # Countdown text with glow effect
+            self._canvas.create_text(
+                center_x, center_y - 35,
+                text=countdown_text,
+                fill=config.DETECTION_PULSE_COLOR,
+                font=("Segoe UI", 20, "bold"),
+                tags=(self._countdown_tag,)
+            )
 
     def _prepare_image(self, frame_bgr: np.ndarray) -> tuple[Image.Image, float, int, int]:
         rgb = frame_bgr[:, :, ::-1]  # BGR -> RGB without OpenCV dependency here
@@ -164,6 +192,10 @@ class CameraCanvas(ttk.Frame):
             self.after(45, lambda: _fade(step + 1))
 
         _fade(0)
+    
+    def set_auto_capture_countdown(self, seconds: float | None) -> None:
+        """Update the auto-capture countdown display."""
+        self._auto_capture_time_remaining = seconds
 
 
 __all__ = ["CameraCanvas"]

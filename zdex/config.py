@@ -49,7 +49,18 @@ WIKIPEDIA_LANG_PRIORITY = ("es", "en")
 WIKIPEDIA_SUMMARY_CHAR_LIMIT = 600
 
 ANALYTICS_LOG_PATH = DATA_DIR / "events.log"
-DEFAULT_LOCATION = "Santiago, Chile"
+DEFAULT_LOCATION = "Ubicación desconocida"
+
+# Gamification settings
+AUTO_CAPTURE_THRESHOLD_SECONDS = 5.0  # Auto-captura después de 5 segundos
+STATS_FILE_PATH = DATA_DIR / "stats.json"
+ACHIEVEMENTS_FILE_PATH = DATA_DIR / "achievements.json"
+
+# Animation settings
+DETECTION_PULSE_COLOR = "#22c55e"  # Verde brillante para detección activa
+DETECTION_GLOW_DURATION_MS = 800  # Duración de animación de brillo
+CAPTURE_ANIMATION_DURATION_MS = 1500  # Animación de captura
+FADE_IN_DURATION_MS = 300  # Fade in para paneles
 ANIMAL_CLASS_IDS = {
 	14,  # bird
 	15,  # cat

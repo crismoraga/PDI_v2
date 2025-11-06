@@ -1,0 +1,102 @@
+{
+  "first_capture": {
+    "id": "first_capture",
+    "name": "Primera Captura",
+    "description": "Captura tu primer animal",
+    "icon": "🎯",
+    "unlocked": true,
+    "unlock_date": "2025-11-05T22:33:23.141826",
+    "progress": 1,
+    "target": 1
+  },
+  "explorer": {
+    "id": "explorer",
+    "name": "Explorador",
+    "description": "Captura 10 animales diferentes",
+    "icon": "🗺️",
+    "unlocked": false,
+    "unlock_date": null,
+    "progress": 1,
+    "target": 10
+  },
+  "researcher": {
+    "id": "researcher",
+    "name": "Investigador",
+    "description": "Captura 25 animales diferentes",
+    "icon": "🔬",
+    "unlocked": false,
+    "unlock_date": null,
+    "progress": 1,
+    "target": 25
+  },
+  "naturalist": {
+    "id": "naturalist",
+    "name": "Naturalista",
+    "description": "Captura 50 animales diferentes",
+    "icon": "🌿",
+    "unlocked": false,
+    "unlock_date": null,
+    "progress": 1,
+    "target": 50
+  },
+  "dedicated": {
+    "id": "dedicated",
+    "name": "Dedicado",
+    "description": "Realiza 100 capturas totales",
+    "icon": "⭐",
+    "unlocked": false,
+    "unlock_date": null,
+    "progress": 1,
+    "target": 100
+  },
+  "master": {
+    "id": "master",
+    "name": "Maestro ZDex",
+    "description": "Realiza 500 capturas totales",
+    "icon": "👑",
+    "unlocked": false,
+    "unlock_date": null,
+    "progress": 1,
+    "target": 500
+  },
+  "dog_lover": {
+    "id": "dog_lover",
+    "name": "Amante de Perros",
+    "description": "Captura 10 perros",
+    "icon": "🐕",
+    "unlocked": false,
+    "unlock_date": null,
+    "progress": 0,
+    "target": 10
+  },
+  "cat_lover": {
+    "id": "cat_lover",
+    "name": "Amante de Gatos",
+    "description": "Captura 10 gatos",
+    "icon": "🐈",
+    "unlocked": false,
+    "unlock_date": null,
+    "progress": 0,
+    "target": 10
+  },
+  "bird_watcher": {
+    "id": "bird_watcher",
+    "name": "Observador de Aves",
+    "description": "Captura 15 aves",
+    "icon": "🦅",
+    "unlocked": false,
+    "unlock_date": null,
+    "progress": 0,
+    "target": 15
+  },
+  "global_explorer": {
+    "id": "global_explorer",
+    "name": "Explorador Global",
+    "description": "Captura animales en 5 ubicaciones diferentes",
+    "icon": "🌍",
+    "unlocked": false,
+    "unlock_date": null,
+    "progress": 1,
+    "target": 5
+  }
+}

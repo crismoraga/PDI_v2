@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 import queue
 import threading
+import time
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
@@ -17,9 +18,11 @@ from . import config
 from .camera import CONTROLLER as CAMERA
 from .data_store import STORE
 from .detector import ENGINE, DetectionResult
+from .gamification import GAMIFICATION, Achievement
+from .geolocation import GEOLOCATOR, Location
 from .pipeline import DetectionPipeline, PIPELINE
 from .ui.camera_canvas import CameraCanvas
-from .ui.panels import CaptureHistoryPanel, SpeciesDisplayContext, SpeciesInfoPanel
+from .ui.panels import CaptureHistoryPanel, SpeciesDisplayContext, SpeciesInfoPanel, StatsPanel
 from .ui.styles import configure_styles
 from .wikipedia_client import FETCHER, WikipediaEntry
 
@@ -43,6 +46,15 @@ class ZDexApp:
         config.DATA_DIR.mkdir(parents=True, exist_ok=True)
         config.CAPTURE_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
+        # Get current location automatically
+        logger.info("Obteniendo ubicación automática...")
+        self._current_location = GEOLOCATOR.get_current_location()
+        if self._current_location:
+            logger.info(f"Ubicación detectada: {self._current_location.display_name}")
+        else:
+            logger.warning("No se pudo obtener ubicación automática")
+            self._current_location = Location("", "", config.DEFAULT_LOCATION, 0.0, 0.0)
+
         logger.info("Inicializando cámara y pipeline de detección...")
         self.camera = CAMERA
         self.pipeline: DetectionPipeline = PIPELINE or DetectionPipeline(self.camera, ENGINE)
@@ -61,8 +73,13 @@ class ZDexApp:
         self._wiki_lock = threading.Lock()
         self._current_wikipedia: Optional[WikipediaEntry] = None
         self._polling_active = False
-        self._location_var = tk.StringVar(value=config.DEFAULT_LOCATION)
+        self._location_var = tk.StringVar(value=self._current_location.display_name)
         self._notes_var = tk.StringVar()
+        
+        # Auto-capture tracking
+        self._detection_start_time: Optional[float] = None
+        self._last_detected_species: Optional[str] = None
+        self._auto_capture_triggered = False
 
         logger.info("Construyendo interfaz gráfica...")
         self._build_layout()
@@ -139,17 +156,34 @@ class ZDexApp:
             pady=(8, 0),
         )
 
-        # Information column
+        # Information column - Create Notebook for tab navigation
         info_column = ttk.Frame(body, style="Panel.TFrame")
         info_column.grid(row=0, column=1, sticky="nsew")
-        info_column.rowconfigure(0, weight=3)
-        info_column.rowconfigure(1, weight=2)
-
-        self.species_panel = SpeciesInfoPanel(info_column)
-        self.species_panel.grid(row=0, column=0, sticky="nsew", pady=(0, 16))
-
-        self.history_panel = CaptureHistoryPanel(info_column)
-        self.history_panel.grid(row=1, column=0, sticky="nsew")
+        
+        # Create notebook (tabs) for Pokédex-style navigation
+        self.info_notebook = ttk.Notebook(info_column)
+        self.info_notebook.pack(fill="both", expand=True)
+        
+        # Tab 1: Species Info (current detection)
+        species_tab = ttk.Frame(self.info_notebook, style="Panel.TFrame")
+        self.info_notebook.add(species_tab, text="📷 Detección Actual")
+        
+        self.species_panel = SpeciesInfoPanel(species_tab)
+        self.species_panel.pack(fill="both", expand=True)
+        
+        # Tab 2: Pokédex (History)
+        history_tab = ttk.Frame(self.info_notebook, style="Panel.TFrame")
+        self.info_notebook.add(history_tab, text="📖 Pokédex")
+        
+        self.history_panel = CaptureHistoryPanel(history_tab)
+        self.history_panel.pack(fill="both", expand=True)
+        
+        # Tab 3: Achievements & Stats
+        stats_tab = ttk.Frame(self.info_notebook, style="Panel.TFrame")
+        self.info_notebook.add(stats_tab, text="🏆 Logros")
+        
+        self.stats_panel = StatsPanel(stats_tab)
+        self.stats_panel.pack(fill="both", expand=True)
 
     def _on_start_camera(self) -> None:
         logger.info("Usuario presionó 'Iniciar cámara'")
@@ -195,6 +229,41 @@ class ZDexApp:
                 updated = True
         except queue.Empty:
             pass
+        
+        # Auto-capture logic
+        if self._current_detection:
+            species_name = self._current_detection.primary_label.label.species
+            current_time = time.time()
+            
+            # Same species detected continuously
+            if self._last_detected_species == species_name:
+                if self._detection_start_time is None:
+                    self._detection_start_time = current_time
+                else:
+                    elapsed = current_time - self._detection_start_time
+                    # Update countdown on canvas
+                    remaining = max(0, config.AUTO_CAPTURE_THRESHOLD_SECONDS - elapsed)
+                    self.camera_canvas.set_auto_capture_countdown(remaining)
+                    
+                    # Trigger auto-capture after threshold
+                    if elapsed >= config.AUTO_CAPTURE_THRESHOLD_SECONDS and not self._auto_capture_triggered:
+                        logger.info(f"Auto-captura activada después de {elapsed:.1f}s")
+                        self._auto_capture_triggered = True
+                        self.root.after(100, self._on_capture)
+            else:
+                # New species detected, reset timer
+                self._last_detected_species = species_name
+                self._detection_start_time = current_time
+                self._auto_capture_triggered = False
+                self.camera_canvas.set_auto_capture_countdown(None)
+        else:
+            # No detection, reset everything
+            if self._last_detected_species is not None:
+                self._last_detected_species = None
+                self._detection_start_time = None
+                self._auto_capture_triggered = False
+                self.camera_canvas.set_auto_capture_countdown(None)
+        
         if updated:
             self._handle_detection_update()
         self.root.after(config.DETECTION_INTERVAL_MS, self._poll_detections)
@@ -206,6 +275,7 @@ class ZDexApp:
         if detection is not None:
             label = detection.primary_label.label
             history = STORE.get_history(label)
+            # Only fetch Wikipedia if species changed (persistence)
             if label.uuid != self._current_label_uuid:
                 self._current_label_uuid = label.uuid
                 self._current_wikipedia = None
@@ -253,7 +323,7 @@ class ZDexApp:
         if not success:
             messagebox.showerror(config.APP_NAME, "No se pudo guardar la captura.")
             return
-        location = self._location_var.get().strip() or config.DEFAULT_LOCATION
+        location = self._location_var.get().strip() or self._current_location.display_name
         notes = self._notes_var.get().strip() or None
         history = STORE.record_capture(
             label=label,
@@ -262,12 +332,29 @@ class ZDexApp:
             location=location,
             notes=notes,
         )
+        
+        # Record sighting in gamification system
+        newly_unlocked = GAMIFICATION.record_sighting(
+            species_name=label.species,
+            common_name=label.common_name,
+            location=location,
+            confidence=detection.primary_label.score
+        )
+        
+        # Flash effect
         self.camera_canvas.flash_capture()
         self._update_history_panel()
+        
+        # Show achievement notifications
+        if newly_unlocked:
+            self._show_achievement_notifications(newly_unlocked)
+        
+        # Regular capture notification
         messagebox.showinfo(
             config.APP_NAME,
-            f"Captura guardada: {label.display_name}\nAvistamientos totales: {history.seen_count}",
+            f"✅ Captura guardada: {label.display_name}\nAvistamientos totales: {history.seen_count}",
         )
+        
         # Refresh panel with history including newest capture
         context = SpeciesDisplayContext(
             detection=detection,
@@ -276,10 +363,84 @@ class ZDexApp:
         )
         self.species_panel.update_context(context)
         self._notes_var.set("")
+        
+        # Reset auto-capture state
+        self._auto_capture_triggered = False
+        self._detection_start_time = None
+
+    def _show_achievement_notifications(self, achievements: list[Achievement]) -> None:
+        """Display achievement unlock notifications in a custom styled window."""
+        for achievement in achievements:
+            # Create custom notification window
+            notif = tk.Toplevel(self.root)
+            notif.title("¡Logro Desbloqueado!")
+            notif.geometry("400x200")
+            notif.resizable(False, False)
+            
+            # Configure window style
+            notif.configure(bg="#f9fbff")
+            
+            # Center on screen
+            notif.update_idletasks()
+            x = (notif.winfo_screenwidth() // 2) - (400 // 2)
+            y = (notif.winfo_screenheight() // 2) - (200 // 2)
+            notif.geometry(f"+{x}+{y}")
+            
+            # Content frame
+            frame = ttk.Frame(notif, style="Primary.TFrame", padding=24)
+            frame.pack(fill="both", expand=True)
+            
+            # Icon and title
+            header = ttk.Frame(frame, style="Primary.TFrame")
+            header.pack(fill="x", pady=(0, 16))
+            
+            icon_label = ttk.Label(
+                header,
+                text=achievement.icon,
+                font=("Segoe UI", 48),
+                style="Primary.TFrame"
+            )
+            icon_label.pack(side="left", padx=(0, 16))
+            
+            title_label = ttk.Label(
+                header,
+                text=achievement.name,
+                style="Achievement.TLabel",
+                font=("Segoe UI", 18, "bold")
+            )
+            title_label.pack(side="left", fill="x", expand=True)
+            
+            # Description
+            desc_label = ttk.Label(
+                frame,
+                text=achievement.description,
+                style="Panel.TLabel",
+                font=("Segoe UI", 12),
+                wraplength=350
+            )
+            desc_label.pack(fill="x", pady=(0, 16))
+            
+            # Close button
+            close_btn = ttk.Button(
+                frame,
+                text="¡Genial!",
+                style="Accent.TButton",
+                command=notif.destroy
+            )
+            close_btn.pack()
+            
+            # Auto-close after 5 seconds
+            notif.after(5000, notif.destroy)
+            
+            # Play focus animation
+            notif.focus_force()
+            logger.info(f"🏆 Logro desbloqueado: {achievement.name}")
 
     def _update_history_panel(self) -> None:
+        """Update both history and stats panels."""
         histories = STORE.get_all()
         self.history_panel.render(histories)
+        self.stats_panel.update_stats()
 
     def _on_close(self) -> None:
         self._polling_active = False

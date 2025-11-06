@@ -1,0 +1,17 @@
+{
+  "species": {
+    "brasiliensis": {
+      "species_name": "brasiliensis",
+      "common_name": "giant otter",
+      "total_sightings": 1,
+      "first_seen": "2025-11-05T22:33:23.140297",
+      "last_seen": "2025-11-05T22:33:23.141826",
+      "locations": [
+        "Viña del Mar, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.9519746899604797
+    }
+  },
+  "total_captures": 1,
+  "session_start": "2025-11-05T21:59:14.838052"
+}
