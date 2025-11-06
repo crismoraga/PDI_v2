@@ -1,0 +1,34 @@
+{
+  "species": {
+    "990ae9dd-7a59-4344-afcb-1b7b21368000": {
+      "class_index": 916,
+      "label_uuid": "990ae9dd-7a59-4344-afcb-1b7b21368000",
+      "common_name": "human",
+      "scientific_name": "Homo sapiens",
+      "captures": [
+        {
+          "timestamp": "2025-11-06T00:05:29.115100Z",
+          "location": "Santiago, Chile",
+          "confidence": 0.38093024492263794,
+          "image_path": "C:\\Users\\Cris\\Desktop\\PDI_v2\\data\\captures\\990ae9dd-7a59-4344-afcb-1b7b21368000_20251106_000529.jpg",
+          "notes": null
+        }
+      ]
+    },
+    "3d80f1d6-b1df-4966-9ff4-94053c7a902a": {
+      "class_index": 2030,
+      "label_uuid": "3d80f1d6-b1df-4966-9ff4-94053c7a902a",
+      "common_name": "domestic dog",
+      "scientific_name": "Canis familiaris",
+      "captures": [
+        {
+          "timestamp": "2025-11-06T00:05:39.518328Z",
+          "location": "Santiago, Chile",
+          "confidence": 0.5962714552879333,
+          "image_path": "C:\\Users\\Cris\\Desktop\\PDI_v2\\data\\captures\\3d80f1d6-b1df-4966-9ff4-94053c7a902a_20251106_000539.jpg",
+          "notes": null
+        }
+      ]
+    }
+  }
+}
