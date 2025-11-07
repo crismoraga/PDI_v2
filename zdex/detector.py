@@ -58,7 +58,7 @@ class DetectionEngine:
         logger.info("Detector YOLOv12 cargado correctamente")
         
         logger.info(f"Cargando clasificador SpeciesNet desde {config.CLASSIFIER_PATH}...")
-        self._classifier = torch.load(config.CLASSIFIER_PATH, map_location=self._map_location)
+        self._classifier = torch.load(config.CLASSIFIER_PATH, map_location=self._map_location, weights_only=False)
         try:
             self._classifier = self._classifier.to(self._device)
             logger.info(f"Clasificador migrado a {self._device}")

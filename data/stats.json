@@ -10,8 +10,118 @@
         "Viña del Mar, Región de Valparaíso, Chile"
       ],
       "best_confidence": 0.9519746899604797
+    },
+    "camelopardalis": {
+      "species_name": "camelopardalis",
+      "common_name": "giraffe",
+      "total_sightings": 4,
+      "first_seen": "2025-11-07T18:01:18.699642",
+      "last_seen": "2025-11-07T19:43:21.558856",
+      "locations": [
+        "Valparaíso, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.9548950791358948
+    },
+    "canadensis": {
+      "species_name": "canadensis",
+      "common_name": "north american river otter",
+      "total_sightings": 1,
+      "first_seen": "2025-11-07T18:04:40.989277",
+      "last_seen": "2025-11-07T18:04:40.989311",
+      "locations": [
+        "Valparaíso, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.46492069959640503
+    },
+    "": {
+      "species_name": "",
+      "common_name": "blank",
+      "total_sightings": 1,
+      "first_seen": "2025-11-07T19:05:36.565325",
+      "last_seen": "2025-11-07T19:05:36.565365",
+      "locations": [
+        "Valparaíso, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.3804002106189728
+    },
+    "catus": {
+      "species_name": "catus",
+      "common_name": "domestic cat",
+      "total_sightings": 9,
+      "first_seen": "2025-11-07T19:07:47.989887",
+      "last_seen": "2025-11-07T19:11:05.421522",
+      "locations": [
+        "Valparaíso, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.9976771473884583
+    },
+    "sapiens": {
+      "species_name": "sapiens",
+      "common_name": "human",
+      "total_sightings": 1,
+      "first_seen": "2025-11-07T19:10:55.213800",
+      "last_seen": "2025-11-07T19:10:55.213815",
+      "locations": [
+        "Valparaíso, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.9408999085426331
+    },
+    "familiaris": {
+      "species_name": "familiaris",
+      "common_name": "domestic dog",
+      "total_sightings": 1,
+      "first_seen": "2025-11-07T19:11:19.388790",
+      "last_seen": "2025-11-07T19:11:19.388808",
+      "locations": [
+        "Valparaíso, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.8311627507209778
+    },
+    "vitellinus": {
+      "species_name": "vitellinus",
+      "common_name": "channel-billed toucan",
+      "total_sightings": 1,
+      "first_seen": "2025-11-07T19:43:54.303260",
+      "last_seen": "2025-11-07T19:43:54.303277",
+      "locations": [
+        "Valparaíso, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.370849072933197
+    },
+    "americanus": {
+      "species_name": "americanus",
+      "common_name": "mountain goat",
+      "total_sightings": 4,
+      "first_seen": "2025-11-07T19:44:18.638238",
+      "last_seen": "2025-11-07T19:45:01.864660",
+      "locations": [
+        "Valparaíso, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.0798761248588562
+    },
+    "gulo": {
+      "species_name": "gulo",
+      "common_name": "wolverine",
+      "total_sightings": 1,
+      "first_seen": "2025-11-07T19:44:29.820728",
+      "last_seen": "2025-11-07T19:44:29.820744",
+      "locations": [
+        "Valparaíso, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.109199158847332
+    },
+    "arctos": {
+      "species_name": "arctos",
+      "common_name": "brown bear",
+      "total_sightings": 3,
+      "first_seen": "2025-11-07T19:45:59.090958",
+      "last_seen": "2025-11-07T19:46:42.528722",
+      "locations": [
+        "Valparaíso, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.9876728653907776
     }
   },
-  "total_captures": 1,
-  "session_start": "2025-11-05T21:59:14.838052"
+  "total_captures": 27,
+  "session_start": "2025-11-07T19:45:47.192442"
 }

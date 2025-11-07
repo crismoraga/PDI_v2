@@ -56,7 +56,7 @@ class CameraController:
     def _capture_loop(self) -> None:
         logger.info("Abriendo dispositivo de video...")
         with self._lock:
-            capture = cv2.VideoCapture(self.device_id, cv2.CAP_DSHOW)
+            capture = cv2.VideoCapture(10)
             capture.set(cv2.CAP_PROP_FRAME_WIDTH, config.FRAME_DISPLAY_MAX_WIDTH)
             capture.set(cv2.CAP_PROP_FRAME_HEIGHT, config.FRAME_DISPLAY_MAX_HEIGHT)
             capture.set(cv2.CAP_PROP_FPS, 30)

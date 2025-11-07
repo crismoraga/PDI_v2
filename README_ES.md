@@ -1,4 +1,4 @@
-# ZDex - Enciclopedia Animal en Tiempo Real
+}# ZDex - Enciclopedia Animal en Tiempo Real
 
 <div align="center">
 
@@ -26,12 +26,14 @@ Identificación de animales en tiempo real usando YOLOv12 y SpeciesNet
 
 ### Hardware
 - **GPU**: AMD Radeon RX 6700 XT (o cualquier GPU con DirectML)
+- **2 pantallas**: Una para ver la ZDex y otra para detectar las fotos/vídeos/vídeollamadas
 - **Webcam**: Cámara integrada o externa
 - **RAM**: Mínimo 8 GB
 
 ### Software
 - **Python**: 3.10 o superior
-- **Sistema Operativo**: Windows 10/11 (por DirectML)
+- **Sistema Operativo**: Linux Ubuntu
+-**Discord**: Aplicación para enviar video en tiempo real para procesar remotamente en PC central
 
 ---
 
@@ -57,7 +59,11 @@ pip install pillow
 pip install requests
 pip install Wikipedia-API
 pip install ultralytics
+
+sudo apt install v4l2loopback-dkms v4l-utils ffmpeg
 ```
+
+### 
 
 ### 3. Descargar modelos
 
@@ -67,25 +73,19 @@ Los modelos se descargan automáticamente en el primer uso:
 
 ---
 
-## 🎮 Uso
-
-### Opción 1: Script launcher (recomendado)
-
-```powershell
-python run_zdex.py
-```
-
-### Opción 2: Módulo directo
-
-```powershell
-python -m zdex.app
-```
-
----
-
 ## 📖 Guía de usuario
 
-### 1. Iniciar la aplicación
+### 1. Emitir pantalla para detección en la webcam virtual e iniciar llamada de Discord en pantalla para detección
+
+
+```powershell
+sudo modprobe v4l2loopback devices=1 video_nr=10 card_label="VirtualScreenCam" exclusive_caps=1 # crear el dispositivo virtual (cambiar devices=1 por la pantalla que se ocupará para detectar)
+v4l2-ctl --list-devices # para confirmar que se creó el dispositivo virtual
+ffmpeg -f x11grab -r 30 -s 800x600 -i :0.0 -vcodec rawvideo -pix_fmt yuv420p -f v4l2 /dev/video10 # emitir la pantalla a la webcam virtual
+
+```
+
+### 2. Iniciar la aplicación
 
 ```powershell
 python run_zdex.py
@@ -96,19 +96,19 @@ Verás la ventana principal de ZDex con:
 - **Panel derecho superior**: Información de especies detectadas
 - **Panel derecho inferior**: Historial de capturas
 
-### 2. Activar la cámara
+### 3. Activar la cámara
 
 1. Haz clic en el botón **"Iniciar cámara"**
 2. Permite el acceso a la webcam si el sistema lo solicita
 3. Espera unos segundos mientras se inicializa la detección
 
-### 3. Detectar un animal
+### 4. Detectar un animal
 
 1. Apunta la cámara hacia un animal (puede ser una mascota, foto, o video)
 2. El sistema dibujará un **recuadro verde** alrededor del animal detectado
 3. Verás el nombre y confianza sobre el recuadro (ej: "Dog 89.5%")
 
-### 4. Capturar un animal
+### 5. Capturar un animal
 
 1. Cuando veas un animal detectado, el botón **"¡Capturar!"** se activará
 2. **Opcional**: Edita la **Ubicación** (por defecto: Santiago, Chile)
@@ -118,7 +118,7 @@ Verás la ventana principal de ZDex con:
 6. Se guardará la imagen en `data/captures/`
 7. La información de Wikipedia aparecerá en el panel derecho
 
-### 5. Ver información detallada
+### 6. Ver información detallada
 
 El panel superior derecho muestra:
 - **Nombre común** del animal
@@ -129,7 +129,7 @@ El panel superior derecho muestra:
 - **Última ubicación** donde lo viste
 - **Última fecha** de avistamiento
 
-### 6. Revisar historial
+### 7. Revisar historial
 
 El panel inferior derecho muestra:
 - Lista de todos los animales capturados
@@ -142,7 +142,7 @@ El panel inferior derecho muestra:
 
 ### Caso 1: Mascota en casa
 ```
-1. Iniciar cámara
+1. Unirse a Discord y realizar una videollamada a usuario de PC central
 2. Apuntar a tu perro/gato
 3. Esperar detección (recuadro verde)
 4. Escribir ubicación: "Casa - Sala"
@@ -152,7 +152,7 @@ El panel inferior derecho muestra:
 
 ### Caso 2: Video de National Geographic
 ```
-1. Reproducir video de animal salvaje en pantalla
+1. Reproducir video de animal salvaje en pantalla para detección
 2. Apuntar cámara a la pantalla
 3. Esperar detección
 4. Escribir ubicación: "Documental - África"
@@ -162,9 +162,10 @@ El panel inferior derecho muestra:
 ### Caso 3: Fotos impresas
 ```
 1. Tener foto impresa de animal
-2. Apuntar cámara a la foto
-3. Esperar detección
-4. Capturar
+2. Unirse a Discord con videollamada a usuario de PC central
+3. Apuntar cámara a la foto
+4. Esperar detección
+5. Capturar
 ```
 
 ---
@@ -387,7 +388,7 @@ Este proyecto es académico, desarrollado para el curso de Procesamiento Digital
 - Iván Weber
 - Camilo Troncoso
 
-**Universidad**: [Tu Universidad]  
+**Universidad**: Universidad Técnica Federico Santa María  
 **Curso**: Procesamiento Digital de Imágenes  
 **Fecha**: Noviembre 2025
 

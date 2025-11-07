@@ -12,6 +12,13 @@
           "confidence": 0.38093024492263794,
           "image_path": "C:\\Users\\Cris\\Desktop\\PDI_v2\\data\\captures\\990ae9dd-7a59-4344-afcb-1b7b21368000_20251106_000529.jpg",
           "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:10:55.213044Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9408999085426331,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/990ae9dd-7a59-4344-afcb-1b7b21368000_20251107_221055.jpg",
+          "notes": null
         }
       ]
     },
@@ -27,6 +34,13 @@
           "confidence": 0.5962714552879333,
           "image_path": "C:\\Users\\Cris\\Desktop\\PDI_v2\\data\\captures\\3d80f1d6-b1df-4966-9ff4-94053c7a902a_20251106_000539.jpg",
           "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:11:19.387825Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.8311627507209778,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/3d80f1d6-b1df-4966-9ff4-94053c7a902a_20251107_221119.jpg",
+          "notes": null
         }
       ]
     },
@@ -41,6 +55,238 @@
           "location": "Viña del Mar, Región de Valparaíso, Chile",
           "confidence": 0.9519746899604797,
           "image_path": "C:\\Users\\Cris\\Desktop\\PDI_v2\\data\\captures\\07709a39-6d4b-4973-bc8e-3543ce208611_20251106_013323.jpg",
+          "notes": null
+        }
+      ]
+    },
+    "2dca052b-dff5-4cc9-8072-1282c5713286": {
+      "class_index": 1017,
+      "label_uuid": "2dca052b-dff5-4cc9-8072-1282c5713286",
+      "common_name": "giraffe",
+      "scientific_name": "Giraffa camelopardalis",
+      "captures": [
+        {
+          "timestamp": "2025-11-07T21:01:18.699128Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9548950791358948,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/2dca052b-dff5-4cc9-8072-1282c5713286_20251107_210118.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T21:01:27.073371Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9548950791358948,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/2dca052b-dff5-4cc9-8072-1282c5713286_20251107_210127.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T21:01:35.037776Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9548950791358948,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/2dca052b-dff5-4cc9-8072-1282c5713286_20251107_210135.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:43:21.558046Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9271395802497864,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/2dca052b-dff5-4cc9-8072-1282c5713286_20251107_224321.jpg",
+          "notes": null
+        }
+      ]
+    },
+    "a70c87e9-62bc-41c2-9e36-96fed9136046": {
+      "class_index": 82,
+      "label_uuid": "a70c87e9-62bc-41c2-9e36-96fed9136046",
+      "common_name": "north american river otter",
+      "scientific_name": "Lontra canadensis",
+      "captures": [
+        {
+          "timestamp": "2025-11-07T21:04:40.987965Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.46492069959640503,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/a70c87e9-62bc-41c2-9e36-96fed9136046_20251107_210440.jpg",
+          "notes": null
+        }
+      ]
+    },
+    "f1856211-cfb7-4a5b-9158-c0f72fd09ee6": {
+      "class_index": 2246,
+      "label_uuid": "f1856211-cfb7-4a5b-9158-c0f72fd09ee6",
+      "common_name": "blank",
+      "scientific_name": "blank",
+      "captures": [
+        {
+          "timestamp": "2025-11-07T22:05:36.564406Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.3804002106189728,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/f1856211-cfb7-4a5b-9158-c0f72fd09ee6_20251107_220536.jpg",
+          "notes": null
+        }
+      ]
+    },
+    "9212982e-8a58-4775-a6ac-e9a43110d8f5": {
+      "class_index": 1806,
+      "label_uuid": "9212982e-8a58-4775-a6ac-e9a43110d8f5",
+      "common_name": "domestic cat",
+      "scientific_name": "Felis catus",
+      "captures": [
+        {
+          "timestamp": "2025-11-07T22:07:47.988948Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.6471476554870605,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/9212982e-8a58-4775-a6ac-e9a43110d8f5_20251107_220747.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:07:59.030852Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.6975287199020386,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/9212982e-8a58-4775-a6ac-e9a43110d8f5_20251107_220759.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:08:18.393535Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9329714775085449,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/9212982e-8a58-4775-a6ac-e9a43110d8f5_20251107_220818.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:08:58.100291Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9700503349304199,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/9212982e-8a58-4775-a6ac-e9a43110d8f5_20251107_220858.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:09:06.942153Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9858654737472534,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/9212982e-8a58-4775-a6ac-e9a43110d8f5_20251107_220906.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:09:22.012395Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9697046875953674,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/9212982e-8a58-4775-a6ac-e9a43110d8f5_20251107_220922.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:09:35.448748Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.5743082761764526,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/9212982e-8a58-4775-a6ac-e9a43110d8f5_20251107_220935.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:09:59.240820Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9752576947212219,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/9212982e-8a58-4775-a6ac-e9a43110d8f5_20251107_220959.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:11:05.420744Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9976771473884583,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/9212982e-8a58-4775-a6ac-e9a43110d8f5_20251107_221105.jpg",
+          "notes": null
+        }
+      ]
+    },
+    "0e1da2a2-9a14-4c71-adf7-47b6a5eb2756": {
+      "class_index": 1179,
+      "label_uuid": "0e1da2a2-9a14-4c71-adf7-47b6a5eb2756",
+      "common_name": "channel-billed toucan",
+      "scientific_name": "Ramphastos vitellinus",
+      "captures": [
+        {
+          "timestamp": "2025-11-07T22:43:54.302444Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.370849072933197,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/0e1da2a2-9a14-4c71-adf7-47b6a5eb2756_20251107_224354.jpg",
+          "notes": null
+        }
+      ]
+    },
+    "af80ecfc-4048-4ae6-b0d5-66913090d777": {
+      "class_index": 1059,
+      "label_uuid": "af80ecfc-4048-4ae6-b0d5-66913090d777",
+      "common_name": "mountain goat",
+      "scientific_name": "Oreamnos americanus",
+      "captures": [
+        {
+          "timestamp": "2025-11-07T22:44:18.636882Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.06268898397684097,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/af80ecfc-4048-4ae6-b0d5-66913090d777_20251107_224418.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:44:40.487682Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.0798761248588562,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/af80ecfc-4048-4ae6-b0d5-66913090d777_20251107_224440.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:44:48.787795Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.0798761248588562,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/af80ecfc-4048-4ae6-b0d5-66913090d777_20251107_224448.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:45:01.863494Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.06268898397684097,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/af80ecfc-4048-4ae6-b0d5-66913090d777_20251107_224501.jpg",
+          "notes": null
+        }
+      ]
+    },
+    "33aebad1-08bd-4d07-a82e-bdc55dc9e8ef": {
+      "class_index": 704,
+      "label_uuid": "33aebad1-08bd-4d07-a82e-bdc55dc9e8ef",
+      "common_name": "wolverine",
+      "scientific_name": "Gulo gulo",
+      "captures": [
+        {
+          "timestamp": "2025-11-07T22:44:29.819837Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.109199158847332,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/33aebad1-08bd-4d07-a82e-bdc55dc9e8ef_20251107_224429.jpg",
+          "notes": null
+        }
+      ]
+    },
+    "330bb1e9-84d6-4e41-afa9-938aee17ea29": {
+      "class_index": 375,
+      "label_uuid": "330bb1e9-84d6-4e41-afa9-938aee17ea29",
+      "common_name": "brown bear",
+      "scientific_name": "Ursus arctos",
+      "captures": [
+        {
+          "timestamp": "2025-11-07T22:45:59.089990Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9876728653907776,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/330bb1e9-84d6-4e41-afa9-938aee17ea29_20251107_224559.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:46:34.352688Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9876728653907776,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/330bb1e9-84d6-4e41-afa9-938aee17ea29_20251107_224634.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-07T22:46:42.527738Z",
+          "location": "Valparaíso, Región de Valparaíso, Chile",
+          "confidence": 0.9876728653907776,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/330bb1e9-84d6-4e41-afa9-938aee17ea29_20251107_224642.jpg",
           "notes": null
         }
       ]
