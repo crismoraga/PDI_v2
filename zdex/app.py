@@ -1,6 +1,27 @@
 """Tkinter application launcher for ZDex."""
 from __future__ import annotations
+"""
+Módulo principal de la aplicación ZDex.
 
+Este archivo actúa como el orquestador central de toda la aplicación. Se encarga de:
+1.  Inicializar la ventana principal de la interfaz de usuario (UI) usando Tkinter.
+2.  Cargar y configurar todos los motores y servicios clave:
+    - CAMERA: Controlador de la cámara web.
+    - ENGINE: Motor de detección (YOLO) y clasificación (SpeciesNet).
+    - STORE: Gestor de la base de datos de capturas (data_store.py).
+    - GAMIFICATION: Motor de logros y estadísticas (gamification.py).
+    - FETCHER: Cliente de la API de Wikipedia (wikipedia_client.py).
+3.  Ensamblar la UI principal, organizando los diferentes paneles (panels.py) 
+    y el lienzo de la cámara (camera_canvas.py).
+4.  Iniciar los hilos (threads) de captura de cámara y de análisis del pipeline.
+5.  Gestionar el bucle de eventos principal (`_poll_queues`) que actualiza la UI 
+    con los fotogramas de la cámara y los resultados de la detección.
+6.  Procesar los resultados de la detección (`_process_detection_result`), 
+    coordinando el guardado de datos, la actualización de estadísticas y 
+    la búsqueda de información en Wikipedia.
+
+La lógica de ejecución principal reside en la clase `ZDexApp`.
+"""
 import logging
 import queue
 import threading
@@ -35,7 +56,23 @@ logger = logging.getLogger(__name__)
 
 
 class ZDexApp:
-    """Main application tying together the UI and detection pipeline."""
+   """
+    Clase principal que encapsula toda la lógica de la aplicación ZDex.
+
+    Esta clase mantiene la referencia a la ventana raíz de Tkinter (`self.root`)
+    y a todas las instancias de servicios (cámara, motor, pipeline, etc.).
+    
+    Métodos clave:
+    - __init__: Construye la UI y inicializa los servicios.
+    - run: Inicia los hilos de fondo y el mainloop de Tkinter.
+    - _poll_queues: Bucle de sondeo para actualizar la UI con datos de las 
+                    colas (frames y detecciones).
+    - _process_detection_result: Lógica que se dispara cuando el pipeline 
+                                 detecta un animal.
+    - _fetch_wikipedia_info: Tarea asíncrona para buscar datos de especies 
+                             sin bloquear la UI.
+    - _on_close: Manejador para cerrar la aplicación de forma segura.
+    """
 
     def __init__(self) -> None:
         logger.info("Inicializando ZDex...")

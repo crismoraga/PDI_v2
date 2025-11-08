@@ -1,6 +1,24 @@
 """Persistent storage for captured animal observations."""
 from __future__ import annotations
+"""
+Módulo de persistencia de datos para las capturas de ZDex.
 
+Este archivo se encarga de la "base de datos" de la aplicación. Su única
+responsabilidad es leer y escribir el historial de avistamientos de animales 
+en un archivo JSON en el disco (definido en config.py, ej: data/captures.json).
+
+Clases principales:
+- CaptureEvent: Define la estructura de un único avistamiento (cuándo, 
+                dónde, confianza, ruta de la imagen).
+- SpeciesCaptureHistory: Agrupa todos los 'CaptureEvent' para una misma especie.
+- CaptureStore: El gestor principal. Mantiene los registros en memoria 
+                (`self._records`) y los sincroniza con el archivo JSON 
+                mediante los métodos `_load` y `_persist`.
+
+La instancia global `STORE` se crea al final de este archivo para que 
+otros módulos (como app.py y panels.py) puedan acceder a la misma 
+instancia de la base de datos.
+"""
 import json
 from dataclasses import dataclass, field
 from datetime import datetime

@@ -1,6 +1,28 @@
 """Wikipedia lookup helpers for enriching species information."""
 from __future__ import annotations
+"""
+Cliente de API para buscar y obtener información de especies desde Wikipedia.
 
+Este módulo proporciona una interfaz para consultar Wikipedia y enriquecer
+la experiencia del usuario. Su objetivo es, dado el nombre de una especie, 
+obtener un resumen de texto y una URL a la imagen principal.
+
+Características:
+- Usa la biblioteca `wikipedia-api` para las búsquedas de texto.
+- Usa la API REST de Wikimedia para obtener de forma fiable la imagen 
+  principal de un artículo.
+- Soporta búsqueda con priorización de idiomas (ej. "es" primero, luego "en").
+- Utiliza caché (`@lru_cache`) para evitar búsquedas repetidas de la misma
+  especie.
+
+Clases principales:
+- WikipediaEntry: Una 'dataclass' que estandariza el resultado de una búsqueda.
+- WikipediaFetcher: La clase que maneja la lógica de búsqueda, el fallback 
+                    de idiomas y las conexiones de red.
+
+La instancia global `FETCHER` se crea al final para ser reutilizada por 
+la aplicación.
+"""
 import logging
 from dataclasses import dataclass
 from functools import lru_cache
