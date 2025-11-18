@@ -1,6 +1,23 @@
 """UI panels for the ZDex interface."""
 from __future__ import annotations
+"""
+Definición de los componentes de la interfaz de usuario (paneles) para ZDex.
 
+Este módulo desacopla la lógica de presentación de la lógica de la aplicación 
+principal (app.py). Define los 'widgets' de Tkinter que se usan para mostrar 
+información en la barra lateral y en las pestañas.
+
+Clases principales:
+- SpeciesInfoPanel: El panel lateral que muestra la "ficha" de la especie 
+                    detectada, incluyendo la foto y el resumen de Wikipedia.
+- CaptureHistoryPanel: La pestaña que muestra una lista del historial de 
+                       avistamientos del usuario, leídos desde DataStore.
+- StatsPanel: La pestaña que muestra las estadísticas de "gamificación" 
+              (logros, total de capturas, etc.) desde el módulo Gamification.
+- SpeciesDisplayContext: Una 'dataclass' utilizada para pasar de forma 
+                         ordenada toda la información de una especie 
+                         (detección, Wikipedia, historial) a los paneles.
+"""
 import io
 import tkinter as tk
 from dataclasses import dataclass

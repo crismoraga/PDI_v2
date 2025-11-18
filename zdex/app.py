@@ -43,7 +43,23 @@ logger = logging.getLogger(__name__)
 
 
 class ZDexApp:
-    """Main application tying together the UI and detection pipeline."""
+   """
+    Clase principal que encapsula toda la lógica de la aplicación ZDex.
+
+    Esta clase mantiene la referencia a la ventana raíz de Tkinter (`self.root`)
+    y a todas las instancias de servicios (cámara, motor, pipeline, etc.).
+    
+    Métodos clave:
+    - __init__: Construye la UI y inicializa los servicios.
+    - run: Inicia los hilos de fondo y el mainloop de Tkinter.
+    - _poll_queues: Bucle de sondeo para actualizar la UI con datos de las 
+                    colas (frames y detecciones).
+    - _process_detection_result: Lógica que se dispara cuando el pipeline 
+                                 detecta un animal.
+    - _fetch_wikipedia_info: Tarea asíncrona para buscar datos de especies 
+                             sin bloquear la UI.
+    - _on_close: Manejador para cerrar la aplicación de forma segura.
+    """
 
     def __init__(self) -> None:
         logger.info("Inicializando ZDex...")
