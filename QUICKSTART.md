@@ -12,6 +12,17 @@ O alternativamente:
 python -m zdex.app
 ```
 
+### Tests y prerequisitos
+
+Antes de abrir la UI en modo desarrollo, ejecuta:
+
+```powershell
+pip install -r requirements.txt
+pytest -q
+```
+
+Esto ejecutará pruebas unitarias básicas para garantizar que la pipeline de detección funciona.
+
 ---
 
 ## 📝 Pasos para usar ZDex

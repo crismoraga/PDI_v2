@@ -44,6 +44,21 @@
           "notes": null
         }
       ]
+    },
+    "b57debc1-dff2-48d3-a400-f2b5021e71b0": {
+      "class_index": 466,
+      "label_uuid": "b57debc1-dff2-48d3-a400-f2b5021e71b0",
+      "common_name": "northern raccoon",
+      "scientific_name": "Procyon lotor",
+      "captures": [
+        {
+          "timestamp": "2025-11-18T23:26:52.777149Z",
+          "location": "Viña del Mar, Región de Valparaíso, Chile",
+          "confidence": 0.8990026116371155,
+          "image_path": "C:\\Users\\Cris\\Documents\\GitHub\\PDI_v2\\data\\captures\\b57debc1-dff2-48d3-a400-f2b5021e71b0_20251118_232652.jpg",
+          "notes": null
+        }
+      ]
     }
   }
 }

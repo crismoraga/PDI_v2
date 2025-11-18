@@ -53,6 +53,8 @@ DEFAULT_LOCATION = "Ubicación desconocida"
 
 # Gamification settings
 AUTO_CAPTURE_THRESHOLD_SECONDS = 5.0  # Auto-captura después de 5 segundos
+# Confidence threshold to freeze the UI and present a focused credit card view
+FREEZE_CONFIDENCE_THRESHOLD = 0.90  # 90% - adjust for A/B testing
 STATS_FILE_PATH = DATA_DIR / "stats.json"
 ACHIEVEMENTS_FILE_PATH = DATA_DIR / "achievements.json"
 

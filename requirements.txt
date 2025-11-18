@@ -1,0 +1,7 @@
+pillow
+requests
+wikipedia-api
+pytest
+flake8
+mypy
+playsound==1.3.0

@@ -37,6 +37,7 @@ Identificación de animales en tiempo real usando YOLOv12 y SpeciesNet
 
 ## 🔧 Instalación
 
+
 ### 1. Clonar el repositorio YOLOv12
 
 ```powershell
@@ -48,6 +49,7 @@ cd ..
 ```
 
 ### 2. Instalar dependencias
+
 
 ```powershell
 pip install torch torchvision
@@ -74,6 +76,19 @@ Los modelos se descargan automáticamente en el primer uso:
 ```powershell
 python run_zdex.py
 ```
+## ✨ Generar activos de UI
+
+Si quieres el GIF de celebración o el GIF de demostración (útil para documentación y demos), corre:
+
+```powershell
+python tools/generate_celebration_gif.py
+python tools/generate_demo_gif.py
+python tools/generate_demo_video.py  # Requires ffmpeg; on Windows uses gdigrab
+python tools/generate_assets_pack.py  # Generate placeholder branding assets (icon, splash)
+```
+
+Esto generará `assets/ui/celebration.gif` y `assets/ui/demo_gif.gif`. Los GIFs son opcionales; ZDex mostrará una versión programática si no existen.
+
 
 ### Opción 2: Módulo directo
 
@@ -92,11 +107,13 @@ python run_zdex.py
 ```
 
 Verás la ventana principal de ZDex con:
+
 - **Panel izquierdo**: Vista de cámara (negro hasta que inicies)
 - **Panel derecho superior**: Información de especies detectadas
 - **Panel derecho inferior**: Historial de capturas
 
 ### 2. Activar la cámara
+
 
 1. Haz clic en el botón **"Iniciar cámara"**
 2. Permite el acceso a la webcam si el sistema lo solicita
@@ -121,6 +138,7 @@ Verás la ventana principal de ZDex con:
 ### 5. Ver información detallada
 
 El panel superior derecho muestra:
+
 - **Nombre común** del animal
 - **Nombre científico**
 - **Resumen de Wikipedia** (español o inglés)
@@ -132,6 +150,7 @@ El panel superior derecho muestra:
 ### 6. Revisar historial
 
 El panel inferior derecho muestra:
+
 - Lista de todos los animales capturados
 - Número de avistamientos por especie
 - Última fecha y ubicación
@@ -141,7 +160,8 @@ El panel inferior derecho muestra:
 ## 🎯 Ejemplos de uso
 
 ### Caso 1: Mascota en casa
-```
+
+```text
 1. Iniciar cámara
 2. Apuntar a tu perro/gato
 3. Esperar detección (recuadro verde)
@@ -151,7 +171,8 @@ El panel inferior derecho muestra:
 ```
 
 ### Caso 2: Video de National Geographic
-```
+
+```text
 1. Reproducir video de animal salvaje en pantalla
 2. Apuntar cámara a la pantalla
 3. Esperar detección
@@ -160,12 +181,14 @@ El panel inferior derecho muestra:
 ```
 
 ### Caso 3: Fotos impresas
-```
+
+```text
 1. Tener foto impresa de animal
 2. Apuntar cámara a la foto
 3. Esperar detección
 4. Capturar
 ```
+
 
 ---
 
@@ -275,6 +298,7 @@ DEFAULT_LOCATION = "Santiago, Chile"  # Cambiar a tu ciudad
 **Error**: `No se pudo abrir la cámara (device_id=0)`
 
 **Soluciones**:
+
 1. Verifica que otra app no esté usando la cámara (Zoom, Teams, etc.)
 2. Permite acceso a la cámara en Windows:
    - Configuración → Privacidad → Cámara → Permitir apps de escritorio
@@ -285,13 +309,17 @@ DEFAULT_LOCATION = "Santiago, Chile"  # Cambiar a tu ciudad
 **Problema**: FPS bajo, detecciones retrasadas
 
 **Soluciones**:
+
 1. Cierra otras aplicaciones pesadas
 2. Reduce resolución de cámara en `config.py`:
+
    ```python
    FRAME_DISPLAY_MAX_WIDTH = 640
    FRAME_DISPLAY_MAX_HEIGHT = 480
    ```
+
 3. Aumenta intervalo de detección:
+
    ```python
    DETECTION_INTERVAL_MS = 500  # Detectar cada 500ms
    ```
@@ -301,6 +329,7 @@ DEFAULT_LOCATION = "Santiago, Chile"  # Cambiar a tu ciudad
 **Problema**: El recuadro verde no aparece
 
 **Causas posibles**:
+
 1. **Animal no está en clases COCO**: YOLOv12 solo detecta: perros, gatos, pájaros, caballos, ovejas, vacas, elefantes, osos, cebras, jirafas
 2. **Confianza muy baja**: Reduce `DETECTION_CONFIDENCE_THRESHOLD` en config.py
 3. **Iluminación mala**: Mejora la luz de la escena
@@ -311,6 +340,7 @@ DEFAULT_LOCATION = "Santiago, Chile"  # Cambiar a tu ciudad
 **Error**: `TypeError: '>=' not supported between instances of 'torch.device' and 'int'`
 
 **Solución**: Ya corregido en `detector.py`. Si persiste:
+
 ```powershell
 pip uninstall torch-directml
 pip install torch-directml --upgrade
@@ -321,9 +351,11 @@ pip install torch-directml --upgrade
 **Problema**: Panel derecho sin imagen de referencia
 
 **Soluciones**:
+
 1. Verifica conexión a internet
 2. Algunos animales no tienen imagen en Wikipedia
 3. Revisa logs para ver errores de red
+
 
 ---
 
@@ -373,6 +405,7 @@ pip install torch-directml --upgrade
 Este proyecto es académico, desarrollado para el curso de Procesamiento Digital de Imágenes.
 
 **Uso de modelos pre-entrenados**:
+
 - YOLOv12: GPL-3.0 License
 - SpeciesNet: Apache-2.0 License
 
@@ -381,11 +414,13 @@ Este proyecto es académico, desarrollado para el curso de Procesamiento Digital
 ## 👥 Autores
 
 **Grupo PDI v2**:
+
 - Clemente Mujica
 - Cristóbal Moraga
 - Felipe Tapia
 - Iván Weber
 - Camilo Troncoso
+
 
 **Universidad**: [Tu Universidad]  
 **Curso**: Procesamiento Digital de Imágenes  

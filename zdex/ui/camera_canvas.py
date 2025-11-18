@@ -34,18 +34,55 @@ class CameraCanvas(ttk.Frame):
         self._countdown_tag = "auto_capture_countdown"
         self._frame_count = 0
         self._auto_capture_time_remaining: float | None = None
+        # Focused crop (x1, y1, x2, y2) in canvas coordinates; when set, render only this region
+        self._focus_bbox: tuple[int, int, int, int] | None = None
 
     def render(self, frame_bgr: np.ndarray, detections: Sequence[DetectionResult] = ()) -> None:
         if frame_bgr is None:
             return
         self._frame_count += 1
         image, scale, offset_x, offset_y = self._prepare_image(frame_bgr)
+        # If a focus bbox is set (in original frame coords), crop the image around it and
+        # scale to the full canvas for emphasis.
+        if self._focus_bbox:
+            try:
+                # self._focus_bbox is in source frame coords; translate to canvas coords
+                x1, y1, x2, y2 = self._focus_bbox
+                x1 = int(x1 * scale + offset_x)
+                y1 = int(y1 * scale + offset_y)
+                x2 = int(x2 * scale + offset_x)
+                y2 = int(y2 * scale + offset_y)
+                # Expand a bit for nicer composition
+                expand_x = int((x2 - x1) * 0.20)
+                expand_y = int((y2 - y1) * 0.20)
+                x1 -= expand_x
+                y1 -= expand_y
+                x2 += expand_x
+                y2 += expand_y
+                # Clamp
+                x1 = max(0, min(self._width, x1))
+                y1 = max(0, min(self._height, y1))
+                x2 = max(0, min(self._width, x2))
+                y2 = max(0, min(self._height, y2))
+                cropped = image.crop((x1, y1, x2, y2))
+                image = cropped.resize((self._width, self._height), Image.Resampling.LANCZOS)
+                # Remove overlays when focused
+                detections = ()
+            except Exception:
+                pass
         self._photo = ImageTk.PhotoImage(image=image)
         self._canvas.delete("frame")
         self._canvas.create_image(0, 0, anchor="nw", image=self._photo, tags="frame")
         self._draw_overlays(detections, scale, offset_x, offset_y)
         
+        # Draw scanning line if detecting but not focused
+        if detections and not self._focus_bbox:
+            self._draw_scanning_line()
+        else:
+            self._canvas.delete("scan_line")
+        
         # Status indicator: green pulsing dot when detecting
+
         self._canvas.delete(self._status_tag)
         color = config.DETECTION_PULSE_COLOR if detections else "#94a3b8"
         self._canvas.create_oval(
@@ -196,6 +233,82 @@ class CameraCanvas(ttk.Frame):
     def set_auto_capture_countdown(self, seconds: float | None) -> None:
         """Update the auto-capture countdown display."""
         self._auto_capture_time_remaining = seconds
+
+    def set_focus_bbox(self, bbox: tuple[int, int, int, int]) -> None:
+        """Set a focus bbox in the canvas's coordinate space (after scaling).
+
+        This crops the frame and scales the crop to fill the canvas for a dramatic "pokedex" effect.
+        """
+        # bbox expected in original frame pixel coordinates; translate later during render
+        self._focus_bbox = bbox
+        self._focus_bbox = bbox
+        # add a small visual pulse that draws attention to the focus area
+        self._focus_pulse_step = 0
+        self._focus_pulse_active = True
+        self._animate_focus_pulse()
+
+    def clear_focus(self) -> None:
+        """Clear any focus crop and return to the normal camera feed view."""
+        self._focus_bbox = None
+        self._focus_pulse_active = False
+
+    def _animate_focus_pulse(self) -> None:
+        """Internal: animate a pulsing outline around the focus bbox."""
+        try:
+            if not getattr(self, "_focus_pulse_active", False):
+                self._canvas.delete("focus_pulse")
+                return
+            self._focus_pulse_step = (getattr(self, "_focus_pulse_step", 0) + 1) % 12
+            
+            # When focused, we are zoomed in, so draw the pulse around the entire view
+            # to give a "target locked" HUD effect.
+            width = 4 + (self._focus_pulse_step % 6)
+            color = config.ACCENT_COLOR
+            
+            self._canvas.delete("focus_pulse")
+            # Draw a border around the canvas
+            self._canvas.create_rectangle(
+                2, 2, self._width - 2, self._height - 2,
+                outline=color,
+                width=width,
+                tags=("focus_pulse",)
+            )
+            
+            # Add "TARGET LOCKED" text blinking
+            if self._focus_pulse_step % 6 < 3:
+                self._canvas.create_text(
+                    self._width // 2, 30,
+                    text="TARGET LOCKED",
+                    fill=color,
+                    font=("Segoe UI", 16, "bold"),
+                    tags=("focus_pulse",)
+                )
+            
+            self.after(85, self._animate_focus_pulse)
+        except Exception:
+            self._canvas.delete("focus_pulse")
+
+    def _draw_scanning_line(self) -> None:
+        """Draw a futuristic scanning line moving up and down."""
+        if not hasattr(self, "_scan_y"):
+            self._scan_y = 0
+            self._scan_direction = 1
+        
+        self._scan_y += 5 * self._scan_direction
+        if self._scan_y > self._height:
+            self._scan_direction = -1
+        elif self._scan_y < 0:
+            self._scan_direction = 1
+            
+        self._canvas.delete("scan_line")
+        self._canvas.create_line(
+            0, self._scan_y, self._width, self._scan_y,
+            fill=config.ACCENT_COLOR,
+            width=2,
+            stipple="gray50",
+            tags=("scan_line",)
+        )
+
 
 
 __all__ = ["CameraCanvas"]

@@ -78,6 +78,31 @@ def configure_styles(root: tk.Tk) -> None:
         wraplength=320,
         justify="left",
     )
+
+    # New species highlight style
+    style.configure(
+        "NewSpecies.TLabel",
+        background=config.PANEL_BACKGROUND,
+        foreground=config.ACCENT_COLOR,
+        font=("Segoe UI", 18, "bold"),
+    )
+
+    # Popup header style for big new species view
+    style.configure(
+        "PopupHeader.TLabel",
+        background="#0f172a",
+        foreground="#fff",
+        font=("Segoe UI", 20, "bold"),
+        padding=12,
+    )
+
+    # Subtle window style for modal
+    style.configure(
+        "Popup.TFrame",
+        background="#0f172a",
+        borderwidth=0,
+        relief="flat",
+    )
     style.configure(
         "Stats.TLabel",
         background=config.PANEL_BACKGROUND,

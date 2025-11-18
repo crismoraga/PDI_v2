@@ -23,6 +23,7 @@ class SpeciesDisplayContext:
     detection: Optional[DetectionResult]
     wikipedia: Optional[WikipediaEntry]
     history: Optional[SpeciesCaptureHistory]
+    locked: bool = False
 
 
 class SpeciesInfoPanel(ttk.Frame):
@@ -56,6 +57,22 @@ class SpeciesInfoPanel(ttk.Frame):
         self._history_stats = ttk.Label(self, text="", style="Panel.TLabel")
         self._history_stats.grid(row=6, column=0, sticky="w", pady=(12, 0))
 
+        # Enrichment data
+        self._habitat = ttk.Label(self, text="", style="Panel.TLabel")
+        self._habitat.grid(row=7, column=0, sticky="w", pady=(12, 0))
+
+        self._diet = ttk.Label(self, text="", style="Panel.TLabel")
+        self._diet.grid(row=8, column=0, sticky="w", pady=(4, 0))
+
+        self._distribution = ttk.Label(self, text="", style="Panel.TLabel")
+        self._distribution.grid(row=9, column=0, sticky="w", pady=(4, 0))
+
+        self._conservation = ttk.Label(self, text="", style="Panel.TLabel")
+        self._conservation.grid(row=10, column=0, sticky="w", pady=(4, 0))
+
+        self._locked_label = ttk.Label(self, text="", style="Stats.TLabel")
+        self._locked_label.grid(row=11, column=0, sticky="w", pady=(12, 0))
+
     def clear(self) -> None:
         self._title.configure(text="Esperando detección…")
         self._details.configure(text="")
@@ -79,6 +96,10 @@ class SpeciesInfoPanel(ttk.Frame):
         self._details.configure(
             text=f"Confianza {confidence:.0%} • {label.scientific_name}"
         )
+        # Show taxonomy quick facts
+        tax = f"{label.order} — {label.family}" if label.order or label.family else ""
+        if tax:
+            self._details.configure(text=self._details.cget("text") + f" • {tax}")
         if wikipedia:
             summary_text = wikipedia.summary or "Sin información disponible."
             self._summary.configure(text=summary_text)
@@ -88,11 +109,25 @@ class SpeciesInfoPanel(ttk.Frame):
                 self._image_label.configure(image="", text="")
             self._link.configure(text="Abrir en Wikipedia", foreground=config.ACCENT_COLOR)
             self._link_url = wikipedia.page_url
+            # Use structured fields from WikipediaEntry if available
+            self._habitat.configure(text=(f"Hábitat: {wikipedia.habitat}" if getattr(wikipedia, "habitat", None) else ""))
+            self._diet.configure(text=(f"Dieta: {wikipedia.diet}" if getattr(wikipedia, "diet", None) else ""))
+            self._distribution.configure(text=(f"Distribución: {wikipedia.distribution}" if getattr(wikipedia, "distribution", None) else ""))
+            self._conservation.configure(text=(f"Estado conservación: {getattr(wikipedia, 'conservation_status', '')}" if getattr(wikipedia, "conservation_status", None) else ""))
         else:
             self._summary.configure(text="Buscando información en Wikipedia…")
             self._image_label.configure(image="", text="")
             self._link.configure(text="")
             self._link_url = None
+            self._habitat.configure(text="")
+            self._diet.configure(text="")
+            self._distribution.configure(text="")
+            self._conservation.configure(text="")
+        # Show lock status
+        if getattr(context, "locked", False):
+            self._locked_label.configure(text="🔒 Vista estática: presiona 'Capturar otro animal' para seguir")
+        else:
+            self._locked_label.configure(text="")
         if history:
             last_notes = history.last_notes or "Sin notas"
             stats = (

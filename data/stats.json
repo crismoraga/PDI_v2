@@ -10,8 +10,19 @@
         "Viña del Mar, Región de Valparaíso, Chile"
       ],
       "best_confidence": 0.9519746899604797
+    },
+    "lotor": {
+      "species_name": "lotor",
+      "common_name": "northern raccoon",
+      "total_sightings": 1,
+      "first_seen": "2025-11-18T20:26:52.778164",
+      "last_seen": "2025-11-18T20:26:52.778164",
+      "locations": [
+        "Viña del Mar, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.8990026116371155
     }
   },
-  "total_captures": 1,
-  "session_start": "2025-11-05T21:59:14.838052"
+  "total_captures": 2,
+  "session_start": "2025-11-18T20:26:00.655534"
 }
