@@ -72,13 +72,37 @@ Permite generar evidencia cuantitativa para validar objetivos: precisión (Top-1
 Arquitectura de alto nivel:
 
 ```mermaid
-graph LR
-  Camera[Camera/Frame] --> Pipeline[Detection Pipeline]
-  Pipeline --> Detector[YOLOv12]
-  Detector --> Classifier[SpeciesNet]
-  Classifier --> UI[App (Tkinter)]
-  Pipeline --> Metrics[Metrics Logger -> data/metrics/events.jsonl]
-  UI --> Store[Capture Store]
+flowchart LR
+  %% Subgraphs to improve readability
+  subgraph CAPTURE [Captura]
+    Camera([Cámara / Frame]) --> Pipeline[Pipeline de detección]
+  end
+
+  subgraph INFERENCE [Inferencia]
+    Pipeline --> Detector[YOLOv12]
+    Detector --> Classifier[SpeciesNet]
+  end
+
+  subgraph UI [Interfaz]
+    Classifier --> App[[App (Tkinter)]]
+    App --> Store[(Almacenamiento de capturas)]
+  end
+
+  subgraph METRICS [Métricas]
+    Pipeline --> Metrics{{Metrics Logger}}
+    Metrics --> Events[[events.jsonl]]
+  end
+
+  %% Styling
+  classDef captureStyle fill:#f9f,stroke:#333,stroke-width:1px;
+  classDef infraStyle fill:#9ff,stroke:#333,stroke-width:1px;
+  classDef uiStyle fill:#ff9,stroke:#333,stroke-width:1px;
+  classDef metricsStyle fill:#9f9,stroke:#333,stroke-width:1px;
+
+  class Camera,Pipeline captureStyle;
+  class Detector,Classifier infraStyle;
+  class App,Store uiStyle;
+  class Metrics,Events metricsStyle;
 ```
 
 Archivos clave:
