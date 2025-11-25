@@ -12,7 +12,7 @@ from typing import Optional
 
 import cv2
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox, simpledialog, ttk
 
 from . import config
 from .camera import CONTROLLER as CAMERA
@@ -20,6 +20,7 @@ from .data_store import STORE
 from .detector import ENGINE, DetectionResult
 from .gamification import GAMIFICATION, Achievement
 from .geolocation import GEOLOCATOR, Location
+from .metrics import METRICS
 from .pipeline import DetectionPipeline, PIPELINE
 from .ui.camera_canvas import CameraCanvas
 from .ui.panels import CaptureHistoryPanel, SpeciesDisplayContext, SpeciesInfoPanel, StatsPanel
@@ -315,6 +316,7 @@ class ZDexApp:
         if detection is None or self._latest_frame is None:
             messagebox.showinfo(config.APP_NAME, "No hay detecciones para capturar aún.")
             return
+        auto_capture = self._auto_capture_triggered
         label = detection.primary_label.label
         timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
         filename = f"{label.uuid}_{timestamp}.jpg"
@@ -323,6 +325,10 @@ class ZDexApp:
         if not success:
             messagebox.showerror(config.APP_NAME, "No se pudo guardar la captura.")
             return
+        frame_ts = getattr(detection, "frame_timestamp", None)
+        capture_latency_ms = 0.0
+        if frame_ts is not None:
+            capture_latency_ms = max(0.0, (time.time() - frame_ts) * 1000.0)
         location = self._location_var.get().strip() or self._current_location.display_name
         notes = self._notes_var.get().strip() or None
         history = STORE.record_capture(
@@ -331,6 +337,34 @@ class ZDexApp:
             image_path=Path(path),
             location=location,
             notes=notes,
+        )
+        predicted_name = label.display_name
+        prompt = (
+            f"¿La especie detectada coincide con {predicted_name}?\n"
+            "Selecciona 'Sí' si el modelo acertó o 'No' para corregir."
+        )
+        prediction_correct = messagebox.askyesno(config.APP_NAME, prompt)
+        ground_truth_name = predicted_name
+        if not prediction_correct:
+            correction = simpledialog.askstring(
+                config.APP_NAME,
+                "Ingresa el nombre correcto para registrar la precisión:",
+                initialvalue=predicted_name,
+            )
+            if correction:
+                ground_truth_name = correction.strip()
+            else:
+                ground_truth_name = "Desconocido"
+        METRICS.log_capture_event(
+            species_uuid=label.uuid,
+            predicted_name=predicted_name,
+            ground_truth_name=ground_truth_name,
+            correct=prediction_correct,
+            detection_confidence=detection.detection_confidence,
+            classification_score=detection.primary_label.score,
+            latency_ms=capture_latency_ms,
+            location=location,
+            auto_capture=auto_capture,
         )
         
         # Record sighting in gamification system

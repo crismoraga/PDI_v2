@@ -11,6 +11,7 @@ from typing import List, Optional
 from . import config
 from .camera import CameraController, FramePacket
 from .detector import DetectionEngine, DetectionResult
+from .metrics import METRICS
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +76,15 @@ class DetectionPipeline:
                 # Ejecutar detección
                 detections = self._engine.infer(packet.frame, packet.timestamp)
                 inference_count += 1
+                latency_ms = (time.time() - packet.timestamp) * 1000.0
+                METRICS.log_latency_sample(
+                    stage="inference",
+                    duration_ms=latency_ms,
+                    metadata={
+                        "detections": len(detections),
+                        "frame_shape": packet.frame.shape if packet.frame is not None else None,
+                    },
+                )
                 
                 if not warmup_done:
                     logger.info(f"Primera inferencia exitosa! Detectados {len(detections)} objetos")
@@ -84,7 +94,22 @@ class DetectionPipeline:
                     logger.debug(f"Inferencias ejecutadas: {inference_count}, última detección: {len(detections)} objetos")
                 
                 if detections:
-                    logger.info(f"¡Animal detectado! {len(detections)} detección(es): {[d.primary_label.label.common_name for d in detections]}")
+                    logger.info(
+                        f"¡Animal detectado! {len(detections)} detección(es): "
+                        f"{[d.primary_label.label.common_name for d in detections]}"
+                    )
+                    top = detections[0]
+                    bbox = top.bbox
+                    area = max(0, (bbox[2] - bbox[0])) * max(0, (bbox[3] - bbox[1]))
+                    METRICS.log_detection_event(
+                        species_uuid=top.primary_label.label.uuid,
+                        species_name=top.primary_label.label.display_name,
+                        detection_confidence=top.detection_confidence,
+                        classification_score=top.primary_label.score,
+                        latency_ms=latency_ms,
+                        bbox_area=area,
+                        detections_in_frame=len(detections),
+                    )
                 
                 batch = DetectionBatch(
                     timestamp=packet.timestamp,
