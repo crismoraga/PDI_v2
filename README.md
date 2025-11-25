@@ -73,29 +73,29 @@ Arquitectura de alto nivel:
 
 ```mermaid
 flowchart LR
-  subgraph CAPTURE["Captura"]
-    Camera["📷 Cámara"] --> Pipeline["Pipeline"]
+  subgraph CAPTURE ["Captura"]
+    Camera(["Cámara / Frame"]) --> Pipeline["Pipeline de detección"]
   end
 
-  subgraph INFERENCE["Inferencia"]
-    Pipeline --> Detector["🔍 YOLOv12"]
-    Detector --> Classifier["🏷 SpeciesNet"]
+  subgraph INFERENCE ["Inferencia"]
+    Pipeline --> Detector["YOLOv12"]
+    Detector --> Classifier["SpeciesNet"]
   end
 
-  subgraph UI["Interfaz"]
-    Classifier --> App["🖥 Tkinter UI"]
-    App --> Store["💾 Captures"]
+  subgraph UI ["Interfaz"]
+    Classifier --> App[["App (Tkinter)"]]
+    App --> Store[("Almacenamiento de capturas")]
   end
 
-  subgraph METRICS["Métricas"]
-    Pipeline --> MetricsLogger["📊 Logging"]
-    MetricsLogger --> Events["📈 events.jsonl"]
+  subgraph METRICS ["Métricas"]
+    Pipeline --> MetricsLogger{{"Metrics Logger"}}
+    MetricsLogger --> Events[["events.jsonl"]]
   end
 
-  classDef captureStyle fill:#FFD6F3,stroke:#333,stroke-width:2px,color:#000;
-  classDef infraStyle fill:#B3E5FC,stroke:#333,stroke-width:2px,color:#000;
-  classDef uiStyle fill:#FFFFB3,stroke:#333,stroke-width:2px,color:#000;
-  classDef metricsStyle fill:#C8E6C9,stroke:#333,stroke-width:2px,color:#000;
+  classDef captureStyle fill:#f9f,stroke:#333,stroke-width:1px;
+  classDef infraStyle fill:#9ff,stroke:#333,stroke-width:1px;
+  classDef uiStyle fill:#ff9,stroke:#333,stroke-width:1px;
+  classDef metricsStyle fill:#9f9,stroke:#333,stroke-width:1px;
 
   class Camera,Pipeline captureStyle;
   class Detector,Classifier infraStyle;
