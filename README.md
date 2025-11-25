@@ -1,7 +1,3 @@
----
-license: apache-2.0
----
-
 # ZDex — Pokédex de Animales en Tiempo Real
 
 [![Licencia](https://img.shields.io/badge/licencia-Apache%202.0-blue.svg)](LICENSE)
