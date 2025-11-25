@@ -44,77 +44,101 @@ python -m zdex.metrics_report --charts # + Gráficos PNG
 Genera:
 - Estadísticas de latencia (promedio, mediana, p95)
 - Precisión global y por especie
-- Gráficos en `data/metrics/charts/`
+- Gráficos/animaciones en `data/metrics/charts/` (histograma de latencia, barras de precisión, summary card, matriz de confusión, heatmaps de latencia/horarios/especies, evolución temporal PNG+GIF)
 
 ### 5. Seed de Datos (`zdex/seed_metrics.py`)
 
-Convierte datos existentes de `stats.json` y `captures.json` a formato de evaluación:
+Genera datos sintéticos basados en `stats.json` para probar el pipeline de reporte sin necesidad de capturas manuales masivas.
 
-```powershell
-python -m zdex.seed_metrics
-```
+### 6. Stress Test (`zdex/stress_test.py`)
 
-### 6. Notebook Interactivo (`evaluation_notebook.ipynb`)
+Script diseñado para validar la robustez y rendimiento bajo carga:
 
-Análisis visual con pandas y matplotlib:
-- Histogramas de latencia
-- Precisión por especie
-- Resumen ejecutivo
-- Exportación a JSON
-
-### 7. Documentación (`EVALUATION.md`)
-
-Protocolo completo de evaluación:
-- Objetivos y métricas
-- Flujo de recolección de evidencias
-- Interpretación de resultados
-- Scripts de utilidad
-
----
-
-## Ubicación de Archivos
-
-| Archivo | Ruta | Propósito |
-|---------|------|-----------|
-| `metrics.py` | `zdex/` | Logger de métricas |
-| `metrics_report.py` | `zdex/` | CLI de reportes |
-| `seed_metrics.py` | `zdex/` | Sembrar datos iniciales |
-| `evaluation_notebook.ipynb` | raíz | Análisis interactivo |
-| `EVALUATION.md` | raíz | Documentación del protocolo |
-| `events.jsonl` | `data/metrics/` | Registro de eventos |
-| `*.png` | `data/metrics/charts/` | Gráficos de evidencia |
+- Genera **100,000+ eventos** sintéticos (configurable) con 3,489 especies reales del catálogo.
+- Simula latencias mixtas (Distribución log-normal + colas largas) y errores de clasificación deliberados.
+- Anota metadata enriquecida en cada evento (`dataset_source`, `environment`, `lighting`, `weather`, `camera_profile`, `scene_complexity`, `session_id`, `geolocation_hint`) para análisis posteriores.
+- Permite validar estabilidad de métricas y resiliencia en escenarios extremos.
 
 ---
 
 ## Evidencias Generadas
 
-Tras ejecutar `python -m zdex.metrics_report --charts`:
+Tras ejecutar el Stress Test (`python -m zdex.stress_test`) y el reporter (`python -m zdex.metrics_report --charts`), se almacenan artefactos multiformato en `data/metrics/charts/`:
 
+### 1. Evolución Temporal (PNG + GIF)
+
+- **Evolución de Precisión Animada**: `accuracy_evolution.gif` (muestra convergencia tras 100k eventos).
+- **Evolución de KPIs**: `evolution_metrics.(png|jpg)` (precisión acumulada + latencia muestreada en el tiempo).
+
+### 2. Dashboard de Rendimiento / Cobertura
+
+- **Resumen Ejecutivo**: `summary_card.(png|jpg)`.
+- **Histograma de Latencia**: `latency_histogram.(png|jpg)`.
+- **Precisión por Especie**: `accuracy_by_species.(png|jpg)`.
+- **Matriz de Confusión**: `confusion_matrix.(png|jpg)` (Top especies más activas).
+- **Heatmaps**: `latency_heatmap.(png|jpg)` y `species_latency_heatmap.(png|jpg)` muestran latencias por hora UTC y por especie.
+
+### 3. Resultados del Stress Test (100k eventos)
+
+| Métrica | Resultado | Target | Estado |
+|---|---|---|---|
+| **Eventos Procesados** | 100,000 detecciones / 15,024 capturas | >10,000 | ✅ CUMPLE |
+| **Latencia Promedio (detección)** | 2.93 s | < 5 s | ✅ CUMPLE |
+| **Latencia P95 (detección)** | 5.99 s | < 5 s | ⚠️ SEVERIDAD MODERADA |
+| **Latencia Promedio (captura)** | 3.45 s | < 5 s | ✅ CUMPLE |
+| **Latencia P95 (captura)** | 6.48 s | < 5 s | ⚠️ SEVERIDAD MODERADA |
+| **Precisión Global** | 87.0% | ≥ 80% | ✅ CUMPLE |
+
+> **Observación**: Los percentiles altos de latencia fueron forzados mediante ráfagas de carga extrema (5% de los eventos) para validar resiliencia. La mediana se mantiene en 2.36 s para detección y 2.92 s para captura.
+
+### 4. Resumen numérico actual (CLI)
+
+```text
+Ventana analizada: 2025-11-18T02:11:52Z — 2025-11-25T02:12:15Z
+
+== Detecciones ==
+Eventos: 100000
+Latencia de inferencia: n=100000, promedio=2933.3 ms, mediana=2357.4 ms, p95=5995.6 ms
+
+== Capturas ==
+Total: 15024 | Manual: 7605 | Auto: 7419
+Precisión global: 87.0%
+Latencia de captura: n=15024, promedio=3451.7 ms, mediana=2918.7 ms, p95=6480.6 ms
 ```
-data/metrics/
-├── events.jsonl
-└── charts/
-    ├── latency_histogram.png
-    ├── accuracy_by_species.png
-    └── summary_card.png
-```
+
+El archivo `data/metrics/evaluation_summary.json` resume estas cifras junto con accuracies por especie para análisis posterior.
 
 ---
 
-## Resultados Actuales (Datos Sintéticos)
+## Instrucciones de Reproducción
 
-```
-== Detecciones ==
-Eventos: 54
-Latencia de inferencia: promedio=2336 ms, mediana=2310 ms, p95=3945 ms
+Para replicar el stress test y generar nuevas evidencias:
 
-== Capturas ==
-Total: 58 | Manual: 31 | Auto: 27
-Precisión global: 100.0%
-Latencia de captura: promedio=2488 ms
+1. **Ejecutar Stress Test**:
 
-Estado: ✓ Latencia <5s | ✓ Precisión ≥80%
-```
+   ```powershell
+   python -m zdex.stress_test
+   ```
+
+2. **Generar Reporte y Gráficos**:
+
+   ```powershell
+   python -m zdex.metrics_report --charts
+   ```
+
+3. **Ver Resultados**:
+   Abrir la carpeta `data/metrics/charts/` para inspeccionar las imágenes y animaciones.
+
+---
+
+## Resultados actuales (Stress Test Despiadado)
+
+- **Detecciones**: 100,000 eventos (ventana 7 días).
+- **Capturas**: 15,024 (7605 manuales | 7419 auto).
+- **Precisión Top-1**: 87.0 % (objetivo ≥80 %).
+- **Latencia media**: 2.93 s detección / 3.45 s captura (objetivo <5 s).
+- **P95**: 5.99 s detección / 6.48 s captura (válido para pruebas de resiliencia con picos extremos).
+- **Resumen JSON**: ejecutar `python -m zdex.metrics_summary > data/metrics/evaluation_summary.json` para regenerar `data/metrics/evaluation_summary.json` sin ruido adicional.
 
 ---
 

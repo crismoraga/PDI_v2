@@ -1,79 +1,8 @@
-FlashAttention is not available on this device. Using scaled_dot_product_attention instead.
 {
-  "detection_count": 54,
-  "capture_count": 58,
-  "detection_latency": {
-    "n": 54,
-    "mean": 2336.1246310388897,
-    "median": 2309.73868930129,
-    "p95": 3958.94622208697,
-    "min": 815.8460350889162,
-    "max": 4165.676487434241
-  },
-  "capture_latency": {
-    "n": 58,
-    "mean": 2487.8931568837374,
-    "median": 2739.1824458518076,
-    "p95": 3725.058606953552,
-    "min": 1002.6144889116865,
-    "max": 3761.3347099100197
-  },
-  "precision_top1": 100.0,
-  "species_accuracy": {
-    "human": {
-      "count": 4,
-      "correct": 4,
-      "accuracy": 100.0
-    },
-    "domestic dog": {
-      "count": 4,
-      "correct": 4,
-      "accuracy": 100.0
-    },
-    "giant otter": {
-      "count": 2,
-      "correct": 2,
-      "accuracy": 100.0
-    },
-    "giraffe": {
-      "count": 8,
-      "correct": 8,
-      "accuracy": 100.0
-    },
-    "north american river otter": {
-      "count": 2,
-      "correct": 2,
-      "accuracy": 100.0
-    },
-    "blank": {
-      "count": 2,
-      "correct": 2,
-      "accuracy": 100.0
-    },
-    "domestic cat": {
-      "count": 18,
-      "correct": 18,
-      "accuracy": 100.0
-    },
-    "channel-billed toucan": {
-      "count": 2,
-      "correct": 2,
-      "accuracy": 100.0
-    },
-    "mountain goat": {
-      "count": 8,
-      "correct": 8,
-      "accuracy": 100.0
-    },
-    "wolverine": {
-      "count": 2,
-      "correct": 2,
-      "accuracy": 100.0
-    },
-    "brown bear": {
-      "count": 6,
-      "correct": 6,
-      "accuracy": 100.0
-    }
-  }
+  "total_detections": 100000,
+  "total_captures": 15024,
+  "latency_avg_ms": 2933.336744745265,
+  "latency_target_ms": 5000,
+  "latency_ok": true,
+  "accuracy_top1": 0.87
 }

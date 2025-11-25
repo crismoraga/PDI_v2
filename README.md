@@ -26,7 +26,7 @@
   - [Arquitectura \& Componentes](#arquitectura--componentes)
     - [Componentes (flujo de datos)](#componentes-flujo-de-datos)
     - [Esquema de datos (eventos JSONL)](#esquema-de-datos-eventos-jsonl)
-  - [Resultados actuales (muestra)](#resultados-actuales-muestra)
+  - [Resultados actuales (stress test 100k)](#resultados-actuales-stress-test-100k)
   - [Evidencias generadas (gráficos sample)](#evidencias-generadas-gráficos-sample)
   - [Instalacion y Ejecucion Rapida](#instalacion-y-ejecucion-rapida)
   - [Evaluacion y metricas](#evaluacion-y-metricas)
@@ -136,58 +136,75 @@ Este esquema permite calcular métricas de precisión (Top-1), latencias y gener
 
 ---
 
-## Resultados actuales (muestra)
+## Resultados actuales (stress test 100k)
 
-Estos resultados provienen de una ejecución de ejemplo con datos semilla (script `zdex/seed_metrics.py`). Para reproducir localmente, ejecute `python -m zdex.seed_metrics` y `python -m zdex.metrics_report --charts`.
+Se ejecutó el modo **Despiadado** del script `python -m zdex.stress_test`, el cual genera 100.000 detecciones y 15.024 capturas cruzando 3.489 especies del catálogo, 10 ambientes, 10 climas y múltiples fuentes/datasets. Cada evento ahora incluye metadata adicional (`dataset_source`, `environment`, `lighting`, `weather`, `camera_profile`, `scene_complexity`, `session_id`, `geolocation_hint`) para filtrar posteriormente las métricas.
 
-Resumen numérico (sample):
-
-| Métrica | Valor (sample) |
+| Métrica | Valor |
 |---|---:|
-| Detecciones totales (events detection) | 54 |
-| Capturas totales (events capture) | 58 |
-| Precisión Top-1 (global) | 100% |
-| Latencia inferencia (media) | 2.336 s |
-| Latencia inferencia (mediana) | 2.310 s |
-| Latencia inferencia (p95) | 3.959 s |
-| Latencia captura (media) | 2.488 s |
-| Latencia captura (mediana) | 2.739 s |
-| Latencia captura (p95) | 3.725 s |
+| Detecciones totales | **100.000** |
+| Capturas totales | **15.024** |
+| Precisión Top-1 global | **87.0 %** |
+| Latencia inferencia (media) | 2.933 s |
+| Latencia inferencia (mediana) | 2.357 s |
+| Latencia inferencia (p95) | 5.996 s |
+| Latencia captura (media) | 3.452 s |
+| Latencia captura (mediana) | 2.919 s |
+| Latencia captura (p95) | 6.481 s |
 
-Precisión por especie (sample):
+Precisión por especie (Top 5 capturas registradas):
 
-| Especie | Count | Accuracy |
+| Especie | Capturas | Accuracy |
 |---|---:|---:|
-| domestic cat | 18 | 100% |
-| giraffe | 8 | 100% |
-| mountain goat | 8 | 100% |
-| brown bear | 6 | 100% |
-| human | 4 | 100% |
-| domestic dog | 4 | 100% |
-| others | 10 | 100% |
+| beisa oryx | 14 | 92.9 % |
+| western grebe | 13 | 92.3 % |
+| short-eared brushtail possum | 12 | 100 % |
+| gymnorhina species | 12 | 91.7 % |
+| oriolus species | 12 | 100 % |
 
-Resumen JSON: `data/metrics/evaluation_summary.json` (generado con `python -m zdex.metrics_summary`).
+Resumen JSON actualizado: `data/metrics/evaluation_summary.json` (generado con `python -m zdex.metrics_summary`).
 
 ---
 
 ## Evidencias generadas (gráficos sample)
 
-Los gráficos se generan con `zdex/metrics_report.py --charts` y se colocan en `data/metrics/charts`.
+Los gráficos y animaciones se generan con `zdex/metrics_report.py --charts` (PNG+JPG) y quedan en `data/metrics/charts`. Artefactos principales:
+
+- `latency_histogram.(png|jpg)` — distribución detallada de latencias de inferencia/captura.
+- `accuracy_by_species.(png|jpg)` — ranking de precisión Top-1.
+- `summary_card.(png|jpg)` — KPIs/resumen vs targets.
+- `confusion_matrix.(png|jpg)` — matriz de confusión para las especies con más tráfico.
+- `latency_heatmap.(png|jpg)` — latencia promedio por hora UTC.
+- `species_latency_heatmap.(png|jpg)` — calor de latencia vs frecuencia por especie.
+- `evolution_metrics.(png|jpg)` y `accuracy_evolution.gif` — evolución temporal y animación del stress test.
 
 ![Histograma de latencia](data/metrics/charts/latency_histogram.png)
-_Histograma de latencias (inferencia)_
+_Histograma de latencias (inferencia/captura)_
 
 ![Precisión por especie](data/metrics/charts/accuracy_by_species.png)
-_Precisión Top-1 por especie (muestra)_
+_Precisión Top-1 por especie (Top-N)_
 
 ![Resumen visual de evaluación](data/metrics/charts/summary_card.png)
-_Resumen ejecutivo (sample)_
+_Resumen ejecutivo (targets vs resultados)_
+
+![Matriz de confusión](data/metrics/charts/confusion_matrix.png)
+_Errores y aciertos dentro de las especies más activas_
+
+![Heatmap de latencia por hora](data/metrics/charts/latency_heatmap.png)
+_Variación de latencia promedio en 24 h_
+
+![Heatmap especie/latencia](data/metrics/charts/species_latency_heatmap.png)
+_Cobertura de especies vs latencia media y volumen_
+
+![Evolución animada de precisión](data/metrics/charts/accuracy_evolution.gif)
+_GIF mostrando la convergencia de precisión acumulada_
 
 Interpretación breve de los gráficos:
 
-- Histograma de latencias: muestra la distribución de latencias de inferencia por frame; ver P95 para SLO.
-- Precisión por especie: barra por especie con el porcentaje de captures correctas (Top-1) — útil para identificar sesgos.
-- Resumen ejecutivo: tarjeta visual con las métricas clave y resumen de artefactos.
+- Histograma de latencias: muestra la distribución de latencias de inferencia/captura por frame; revisar el P95 para SLOs.
+- Matriz de confusión: identifica confusiones puntuales entre especies con mayor carga.
+- Heatmaps: permiten detectar ventanas horarias y especies con latencias elevadas.
+- Animación de precisión: comunica cómo evoluciona la precisión acumulada durante los 100k eventos.
 
 
 
@@ -258,11 +275,14 @@ Consejos para validación:
 
 ## Evidencias y Graficos
 
-Se generan PNG con `--charts` en `data/metrics/charts/`. Ejemplos:
+Se generan PNG/JPG/GIF con `--charts` en `data/metrics/charts/`. Artefactos destacados:
 
-- `latency_histogram.png` — histograma latencias
-- `accuracy_by_species.png` — barras de precisión por especie
-- `summary_card.png` — resumen ejecutivo visual
+- `latency_histogram.(png|jpg)` — histograma de latencias
+- `accuracy_by_species.(png|jpg)` — barras de precisión por especie
+- `summary_card.(png|jpg)` — resumen ejecutivo visual
+- `confusion_matrix.(png|jpg)` — matriz de confusión Top-N
+- `latency_heatmap.(png|jpg)` y `species_latency_heatmap.(png|jpg)` — heatmaps de latencia
+- `evolution_metrics.(png|jpg)` y `accuracy_evolution.gif` — evolución temporal/animada
 
 Si existen, se renderizan más arriba en la sección; ejecute el script para regenerarlos con datos reales.
 
@@ -294,13 +314,13 @@ Los números mostrados en las pruebas iniciales con datos semilla resultaron en:
 - Ground truth: la etiqueta manualmente verificada por el usuario para una captura.
 
 
-| Métrica | Valor (sample) | Target |
+| Métrica | Valor (stress test) | Target |
 |---|---:|:---|
-| Latencia inferencia (promedio) | ~2.3 s | < 5 s |
-| Latencia captura (promedio) | ~2.5 s | < 5 s |
-| Precisión Top-1 (global) | 100% (seeded) | ≥ 80% |
+| Latencia inferencia (promedio) | 2.93 s | < 5 s |
+| Latencia captura (promedio) | 3.45 s | < 5 s |
+| Precisión Top-1 (global) | 87.0 % | ≥ 80 % |
 
-> Notas: Estos son datos de ejemplo generados por `seed_metrics.py`. Recomendamos recolectar evidencias reales para un informe definitivo.
+> Datos provenientes del stress test de 100k eventos (`python -m zdex.stress_test` + `python -m zdex.metrics_report --charts`).
 
 ---
 

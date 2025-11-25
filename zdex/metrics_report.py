@@ -5,7 +5,7 @@ import argparse
 import json
 import math
 import statistics
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, Iterator, List, Tuple
@@ -113,12 +113,19 @@ def _generate_charts(records: List[dict[str, Any]], top_n: int) -> None:
     detection_latency: List[float] = []
     capture_latency: List[float] = []
     species_stats: Dict[str, Dict[str, int]] = defaultdict(lambda: {"total": 0, "correct": 0})
+    confusion_pairs: List[Tuple[str, str]] = []
+    latency_by_hour: List[List[float]] = [[] for _ in range(24)]
+    species_latency: Dict[str, List[float]] = defaultdict(list)
 
     for rec in records:
         event = rec.get("event")
         lat = rec.get("latency_ms")
         if event == "detection" and isinstance(lat, (int, float)):
             detection_latency.append(float(lat))
+            ts = rec.get("timestamp")
+            if isinstance(ts, (int, float)):
+                hour = datetime.fromtimestamp(ts, tz=timezone.utc).hour
+                latency_by_hour[hour].append(float(lat))
         elif event == "capture":
             if isinstance(lat, (int, float)):
                 capture_latency.append(float(lat))
@@ -126,6 +133,11 @@ def _generate_charts(records: List[dict[str, Any]], top_n: int) -> None:
             species_stats[species_name]["total"] += 1
             if rec.get("correct"):
                 species_stats[species_name]["correct"] += 1
+            if isinstance(lat, (int, float)):
+                species_latency[species_name].append(float(lat))
+            gt_name = species_name
+            pred_name = rec.get("predicted_name") or species_name
+            confusion_pairs.append((gt_name, pred_name))
 
     # 1. Latency histogram
     if detection_latency or capture_latency:
@@ -181,8 +193,188 @@ def _generate_charts(records: List[dict[str, Any]], top_n: int) -> None:
     ax.text(0.5, 0.5, text, ha="center", va="center", fontsize=12, family="monospace", transform=ax.transAxes)
     fig.tight_layout()
     fig.savefig(charts_dir / "summary_card.png", dpi=150)
+    fig.savefig(charts_dir / "summary_card.jpg", dpi=150)  # JPEG support
     plt.close(fig)
     print(f"Gráfico guardado: {charts_dir / 'summary_card.png'}")
+
+    # 4. Confusion matrix for top species
+    if confusion_pairs:
+        gt_counter = Counter(gt for gt, _ in confusion_pairs)
+        top_species = [name for name, _ in gt_counter.most_common(min(top_n, len(gt_counter)))]
+        if top_species:
+            idx = {name: i for i, name in enumerate(top_species)}
+            matrix = [[0 for _ in top_species] for _ in top_species]
+            for gt, pred in confusion_pairs:
+                if gt in idx and pred in idx:
+                    matrix[idx[gt]][idx[pred]] += 1
+            fig, ax = plt.subplots(figsize=(8, 6))
+            cax = ax.imshow(matrix, cmap="viridis")
+            ax.set_xticks(range(len(top_species)))
+            ax.set_yticks(range(len(top_species)))
+            ax.set_xticklabels(top_species, rotation=45, ha="right", fontsize=8)
+            ax.set_yticklabels(top_species, fontsize=8)
+            ax.set_xlabel("Predicción")
+            ax.set_ylabel("Ground Truth")
+            ax.set_title("Matriz de Confusión (Top especies)")
+            max_cell = max((val for row in matrix for val in row), default=0)
+            threshold = max_cell / 2 if max_cell else 0
+            for i in range(len(top_species)):
+                for j in range(len(top_species)):
+                    value = matrix[i][j]
+                    text_color = "white" if threshold and value > threshold else "black"
+                    ax.text(j, i, str(value), ha="center", va="center", color=text_color, fontsize=7)
+            fig.colorbar(cax, ax=ax, fraction=0.046, pad=0.04)
+            fig.tight_layout()
+            fig.savefig(charts_dir / "confusion_matrix.png", dpi=200)
+            fig.savefig(charts_dir / "confusion_matrix.jpg", dpi=200)
+            plt.close(fig)
+            print(f"Gráfico guardado: {charts_dir / 'confusion_matrix.png'}")
+
+    # 5. Latency heatmap by hour
+    avg_latency_hour = [statistics.fmean(bucket) if bucket else 0 for bucket in latency_by_hour]
+    if any(avg_latency_hour):
+        fig, ax = plt.subplots(figsize=(10, 2.5))
+        heat = ax.imshow([avg_latency_hour], aspect="auto", cmap="inferno")
+        ax.set_xticks(range(24))
+        ax.set_xticklabels(range(24))
+        ax.set_yticks([])
+        ax.set_xlabel("Hora del día (UTC)")
+        ax.set_title("Latencia promedio por hora")
+        fig.colorbar(heat, ax=ax, orientation="vertical", label="Latencia (ms)")
+        fig.tight_layout()
+        fig.savefig(charts_dir / "latency_heatmap.png", dpi=200)
+        fig.savefig(charts_dir / "latency_heatmap.jpg", dpi=200)
+        plt.close(fig)
+        print(f"Gráfico guardado: {charts_dir / 'latency_heatmap.png'}")
+
+    # 6. Species latency heatmap (top N)
+    if species_latency:
+        latency_stats = {
+            name: {
+                "avg": statistics.fmean(values),
+                "count": len(values)
+            }
+            for name, values in species_latency.items() if values
+        }
+        ordered_species = sorted(latency_stats.items(), key=lambda item: item[1]["count"], reverse=True)[:top_n]
+        if ordered_species:
+            labels = [name for name, _ in ordered_species]
+            data = [[latency_stats[name]["avg"], latency_stats[name]["count"]] for name in labels]
+            max_avg = max(row[0] for row in data)
+            max_count = max(row[1] for row in data)
+            normalized = [[row[0] / max_avg if max_avg else 0, row[1] / max_count if max_count else 0] for row in data]
+            fig, ax = plt.subplots(figsize=(6, max(4, len(labels) * 0.4)))
+            heat = ax.imshow(normalized, aspect="auto", cmap="plasma")
+            ax.set_yticks(range(len(labels)))
+            ax.set_yticklabels(labels, fontsize=8)
+            ax.set_xticks([0, 1])
+            ax.set_xticklabels(["Latencia avg", "Muestras"])
+            ax.set_title("Heatmap especie vs latencia")
+            for i, row in enumerate(data):
+                ax.text(0, i, f"{row[0]:.0f} ms", va="center", ha="center", color="white", fontsize=7)
+                ax.text(1, i, str(row[1]), va="center", ha="center", color="white", fontsize=7)
+            fig.colorbar(heat, ax=ax, fraction=0.046, pad=0.04)
+            fig.tight_layout()
+            fig.savefig(charts_dir / "species_latency_heatmap.png", dpi=200)
+            fig.savefig(charts_dir / "species_latency_heatmap.jpg", dpi=200)
+            plt.close(fig)
+            print(f"Gráfico guardado: {charts_dir / 'species_latency_heatmap.png'}")
+
+    # 4. Time Series Evolution (Accuracy & Latency)
+    timestamps = []
+    accuracies = []
+    latencies = []
+    
+    # Sort records by timestamp
+    sorted_records = sorted(records, key=lambda x: x.get("timestamp", 0))
+    
+    running_correct = 0
+    running_total = 0
+    
+    for rec in sorted_records:
+        ts = rec.get("timestamp")
+        if not ts: continue
+        
+        if rec.get("event") == "capture":
+            running_total += 1
+            if rec.get("correct"):
+                running_correct += 1
+            # Calculate running accuracy every 50 captures to avoid noise
+            if running_total % 10 == 0:
+                timestamps.append(datetime.fromtimestamp(ts))
+                accuracies.append((running_correct / running_total) * 100)
+        
+        if rec.get("event") == "detection" and rec.get("latency_ms"):
+            # Sample latency every ~10s to keep chart readable
+            if len(latencies) == 0 or (ts - latencies[-1][0].timestamp() > 10):
+                latencies.append((datetime.fromtimestamp(ts), rec.get("latency_ms")))
+
+    if timestamps and accuracies:
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
+        
+        # Accuracy Evolution
+        ax1.plot(timestamps, accuracies, color="green", linewidth=2)
+        ax1.axhline(80, color="red", linestyle="--", label="Target 80%")
+        ax1.set_ylabel("Precisión Acumulada (%)")
+        ax1.set_title("Evolución de Precisión en el Tiempo")
+        ax1.legend()
+        ax1.grid(True, alpha=0.3)
+        
+        # Latency Evolution
+        if latencies:
+            lat_ts, lat_vals = zip(*latencies)
+            ax2.plot(lat_ts, lat_vals, color="orange", alpha=0.7)
+            ax2.axhline(5000, color="red", linestyle="--", label="Target 5s")
+            ax2.set_ylabel("Latencia (ms)")
+            ax2.set_xlabel("Tiempo")
+            ax2.set_title("Evolución de Latencia")
+            ax2.legend()
+            ax2.grid(True, alpha=0.3)
+            
+        fig.tight_layout()
+        fig.savefig(charts_dir / "evolution_metrics.png", dpi=150)
+        fig.savefig(charts_dir / "evolution_metrics.jpg", dpi=150)
+        plt.close(fig)
+        print(f"Gráfico de evolución guardado: {charts_dir / 'evolution_metrics.png'}")
+
+    # 5. Generate GIF (Simple Animation of Accuracy)
+    try:
+        import matplotlib.animation as animation
+        if timestamps and accuracies:
+            fig, ax = plt.subplots(figsize=(8, 5))
+            line, = ax.plot([], [], color="green", lw=2)
+            ax.set_xlim(min(timestamps), max(timestamps))
+            ax.set_ylim(0, 105)
+            ax.axhline(80, color="red", linestyle="--")
+            ax.set_title("Evolución de Precisión (Animación)")
+            ax.set_ylabel("Precisión (%)")
+            ax.set_xlabel("Tiempo")
+            
+            def init():
+                line.set_data([], [])
+                return line,
+            
+            def animate(i):
+                # Show up to i-th point
+                idx = int((i / 100) * len(timestamps))
+                if idx < 1: idx = 1
+                x = timestamps[:idx]
+                y = accuracies[:idx]
+                line.set_data(x, y)
+                return line,
+            
+            ani = animation.FuncAnimation(fig, animate, frames=100, init_func=init, blit=True)
+            gif_path = charts_dir / "accuracy_evolution.gif"
+            # Requires pillow or imagemagick
+            try:
+                ani.save(gif_path, writer='pillow', fps=15)
+                print(f"GIF guardado: {gif_path}")
+            except Exception as e:
+                print(f"No se pudo guardar GIF (falta writer?): {e}")
+            plt.close(fig)
+    except ImportError:
+        pass
+
 
 
 def _summarize_detections(records: Iterable[dict[str, Any]]) -> None:
