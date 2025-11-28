@@ -10,6 +10,12 @@ from typing import Any, Iterable, Optional
 
 from . import config
 
+# Añade imports opcionales para detección de tipos numpy sin romper si no existe
+try:
+    import numpy as np
+except Exception:
+    np = None
+
 
 @dataclass
 class DetectionMetricsRecord:
@@ -57,9 +63,30 @@ class MetricsLogger:
         self._log_path = metrics_dir / "events.jsonl"
         self._lock = threading.Lock()
 
-    def _append(self, payload: dict[str, Any]) -> None:
-        payload.setdefault("timestamp", time.time())
-        line = json.dumps(payload, ensure_ascii=False)
+    def _append(self, payload: dict) -> None:
+        # Sanitiza numpy types para que sean serializables por JSON
+        def _sanitize(obj):
+            if np is not None:
+                # numpy escalares
+                if isinstance(obj, (np.floating,)):
+                    return float(obj)
+                if isinstance(obj, (np.integer,)):
+                    return int(obj)
+                if isinstance(obj, (np.bool_,)):
+                    return bool(obj)
+                # numpy arrays -> listas de tipos nativos
+                if isinstance(obj, np.ndarray):
+                    return _sanitize(obj.tolist())
+            # colecciones
+            if isinstance(obj, dict):
+                return {k: _sanitize(v) for k, v in obj.items()}
+            if isinstance(obj, (list, tuple)):
+                return [_sanitize(v) for v in obj]
+            # deja otros tipos tal cual
+            return obj
+
+        safe_payload = _sanitize(payload)
+        line = json.dumps(safe_payload, ensure_ascii=False)
         with self._lock:
             with self._log_path.open("a", encoding="utf-8") as handle:
                 handle.write(line + "\n")

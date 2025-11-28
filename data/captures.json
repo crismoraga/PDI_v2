@@ -19,6 +19,13 @@
           "confidence": 0.9408999085426331,
           "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/990ae9dd-7a59-4344-afcb-1b7b21368000_20251107_221055.jpg",
           "notes": null
+        },
+        {
+          "timestamp": "2025-11-27T16:17:10.387346Z",
+          "location": "Viña del Mar, Región de Valparaíso, Chile",
+          "confidence": 0.8806002736091614,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2-PDI_v2.1/data/captures/990ae9dd-7a59-4344-afcb-1b7b21368000_20251127_161710.jpg",
+          "notes": null
         }
       ]
     },
@@ -106,6 +113,13 @@
           "location": "Valparaíso, Región de Valparaíso, Chile",
           "confidence": 0.46492069959640503,
           "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/a70c87e9-62bc-41c2-9e36-96fed9136046_20251107_210440.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-27T16:19:11.805723Z",
+          "location": "Viña del Mar, Región de Valparaíso, Chile",
+          "confidence": 0.7381539940834045,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2-PDI_v2.1/data/captures/a70c87e9-62bc-41c2-9e36-96fed9136046_20251127_161911.jpg",
           "notes": null
         }
       ]
@@ -287,6 +301,70 @@
           "location": "Valparaíso, Región de Valparaíso, Chile",
           "confidence": 0.9876728653907776,
           "image_path": "/home/kkmilo/Documentos/PDI_v2/data/captures/330bb1e9-84d6-4e41-afa9-938aee17ea29_20251107_224642.jpg",
+          "notes": null
+        }
+      ]
+    },
+    "ddf59264-185a-4d35-b647-2785792bdf54": {
+      "class_index": 1379,
+      "label_uuid": "ddf59264-185a-4d35-b647-2785792bdf54",
+      "common_name": "lion",
+      "scientific_name": "Panthera leo",
+      "captures": [
+        {
+          "timestamp": "2025-11-27T16:01:26.491365Z",
+          "location": "Viña del Mar, Región de Valparaíso, Chile",
+          "confidence": 0.9989463686943054,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2-PDI_v2.1/data/captures/ddf59264-185a-4d35-b647-2785792bdf54_20251127_160126.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-27T16:01:44.419056Z",
+          "location": "Viña del Mar, Región de Valparaíso, Chile",
+          "confidence": 0.9989463686943054,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2-PDI_v2.1/data/captures/ddf59264-185a-4d35-b647-2785792bdf54_20251127_160144.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-27T16:02:44.116811Z",
+          "location": "Viña del Mar, Región de Valparaíso, Chile",
+          "confidence": 0.9989463686943054,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2-PDI_v2.1/data/captures/ddf59264-185a-4d35-b647-2785792bdf54_20251127_160244.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-27T16:02:55.260075Z",
+          "location": "Viña del Mar, Región de Valparaíso, Chile",
+          "confidence": 0.9989463686943054,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2-PDI_v2.1/data/captures/ddf59264-185a-4d35-b647-2785792bdf54_20251127_160255.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-27T16:06:54.507237Z",
+          "location": "Viña del Mar, Región de Valparaíso, Chile",
+          "confidence": 0.9989463686943054,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2-PDI_v2.1/data/captures/ddf59264-185a-4d35-b647-2785792bdf54_20251127_160654.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-27T16:07:03.880105Z",
+          "location": "Viña del Mar, Región de Valparaíso, Chile",
+          "confidence": 0.9989463686943054,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2-PDI_v2.1/data/captures/ddf59264-185a-4d35-b647-2785792bdf54_20251127_160703.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-27T16:09:16.417999Z",
+          "location": "Viña del Mar, Región de Valparaíso, Chile",
+          "confidence": 0.9989463686943054,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2-PDI_v2.1/data/captures/ddf59264-185a-4d35-b647-2785792bdf54_20251127_160916.jpg",
+          "notes": null
+        },
+        {
+          "timestamp": "2025-11-27T16:09:26.183482Z",
+          "location": "Viña del Mar, Región de Valparaíso, Chile",
+          "confidence": 0.9989463686943054,
+          "image_path": "/home/kkmilo/Documentos/PDI_v2-PDI_v2.1/data/captures/ddf59264-185a-4d35-b647-2785792bdf54_20251127_160926.jpg",
           "notes": null
         }
       ]

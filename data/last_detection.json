@@ -1,0 +1,13 @@
+{
+  "species_uuid": "a70c87e9-62bc-41c2-9e36-96fed9136046",
+  "class_index": 82,
+  "common_name": "north american river otter",
+  "scientific_name": "Lontra canadensis",
+  "event": {
+    "timestamp": "2025-11-27T16:19:11.805723Z",
+    "location": "Viña del Mar, Región de Valparaíso, Chile",
+    "confidence": 0.7381539940834045,
+    "image_path": "/home/kkmilo/Documentos/PDI_v2-PDI_v2.1/data/captures/a70c87e9-62bc-41c2-9e36-96fed9136046_20251127_161911.jpg",
+    "notes": null
+  }
+}

@@ -58,11 +58,12 @@
     "sapiens": {
       "species_name": "sapiens",
       "common_name": "human",
-      "total_sightings": 1,
+      "total_sightings": 2,
       "first_seen": "2025-11-07T19:10:55.213800",
-      "last_seen": "2025-11-07T19:10:55.213815",
+      "last_seen": "2025-11-27T13:17:33.840967",
       "locations": [
-        "Valparaíso, Región de Valparaíso, Chile"
+        "Valparaíso, Región de Valparaíso, Chile",
+        "Viña del Mar, Región de Valparaíso, Chile"
       ],
       "best_confidence": 0.9408999085426331
     },
@@ -120,8 +121,19 @@
         "Valparaíso, Región de Valparaíso, Chile"
       ],
       "best_confidence": 0.9876728653907776
+    },
+    "leo": {
+      "species_name": "leo",
+      "common_name": "lion",
+      "total_sightings": 7,
+      "first_seen": "2025-11-27T13:01:35.372541",
+      "last_seen": "2025-11-27T13:09:29.579289",
+      "locations": [
+        "Viña del Mar, Región de Valparaíso, Chile"
+      ],
+      "best_confidence": 0.9989463686943054
     }
   },
-  "total_captures": 27,
-  "session_start": "2025-11-07T19:45:47.192442"
+  "total_captures": 35,
+  "session_start": "2025-11-27T13:09:04.751695"
 }

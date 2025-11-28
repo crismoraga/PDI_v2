@@ -92,7 +92,8 @@ class CaptureStore:
     def _load(self) -> None:
         if not self._store_path.exists():
             self._store_path.parent.mkdir(parents=True, exist_ok=True)
-            self._persist()
+            # Persist an empty store without triggering capture flag
+            self._persist(new_capture=False)
             return
         try:
             with self._store_path.open("r", encoding="utf-8") as handle:
@@ -103,13 +104,53 @@ class CaptureStore:
             history = SpeciesCaptureHistory.from_dict(data)
             self._records[uuid] = history
 
-    def _persist(self) -> None:
+    def _persist(self, new_capture: bool = False) -> None:
         self._store_path.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             "species": {uuid: history.to_dict() for uuid, history in self._records.items()}
         }
         with self._store_path.open("w", encoding="utf-8") as handle:
             json.dump(payload, handle, indent=2, ensure_ascii=False)
+
+        # --- Guardar SOLO la última detección ---
+        last_event = None
+        last_species_uuid = None
+        # Compare timestamps using datetime instead of strings
+        last_dt = None
+        for uuid, history in self._records.items():
+            if history.captures:
+                ev = history.captures[-1]
+                try:
+                    ev_dt = datetime.strptime(ev.timestamp, ISO_FMT)
+                except ValueError:
+                    # Fallback if format changes; treat as not newer
+                    ev_dt = None
+                if ev_dt and (last_dt is None or ev_dt > last_dt):
+                    last_event = ev
+                    last_species_uuid = uuid
+                    last_dt = ev_dt
+
+        last_path = config.DATA_DIR / "last_detection.json"
+        last_path.parent.mkdir(parents=True, exist_ok=True)
+        if last_event and last_species_uuid:
+            last_payload = {
+                "species_uuid": last_species_uuid,
+                "class_index": self._records[last_species_uuid].class_index,
+                "common_name": self._records[last_species_uuid].common_name,
+                "scientific_name": self._records[last_species_uuid].scientific_name,
+                "event": last_event.__dict__,
+            }
+        else:
+            last_payload = None
+
+        with last_path.open("w", encoding="utf-8") as f:
+            json.dump(last_payload, f, indent=2, ensure_ascii=False)
+
+        # Indica que hay una nueva captura disponible SOLO si se grabó una nueva captura
+        if new_capture:
+            flag_path = config.DATA_DIR / "capture_flag.json"
+            with flag_path.open("w", encoding="utf-8") as f:
+                json.dump({"active": True, "updated_at": _utc_now()}, f, indent=2, ensure_ascii=False)
 
     def record_capture(
         self,
@@ -131,12 +172,13 @@ class CaptureStore:
         event = CaptureEvent(
             timestamp=_utc_now(),
             location=location,
-            confidence=confidence,
+            confidence=float(confidence),  # asegura tipo nativo para JSON
             image_path=str(image_path),
             notes=notes,
         )
         history.captures.append(event)
-        self._persist()
+        # Persist and set flag indicating a new capture
+        self._persist(new_capture=True)
         return history
 
     def get_history(self, label: SpeciesLabel) -> Optional[SpeciesCaptureHistory]:
