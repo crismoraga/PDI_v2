@@ -1,4 +1,8 @@
 """High-level orchestration of the camera stream and detection engine."""
+# Orquesta el flujo:
+# - Consume frames de CameraController.
+# - Corre inferencia en DetectionEngine en un hilo.
+# - Publica batches en una cola para la UI.
 from __future__ import annotations
 
 import logging
@@ -18,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class DetectionBatch:
+    # Lote de detecciones con timestamp y shape del frame
     timestamp: float
     frame_shape: tuple[int, int, int]
     detections: List[DetectionResult]
@@ -25,7 +30,7 @@ class DetectionBatch:
 
 class DetectionPipeline:
     """Consumes camera frames and emits detection batches asynchronously."""
-
+    # Administra hilo worker, rate-limit y logging de latencias
     def __init__(
         self,
         camera: CameraController,
@@ -39,6 +44,7 @@ class DetectionPipeline:
         self._last_inference_ts = 0.0
 
     def start(self) -> None:
+        # Arranca el hilo de inferencia si no está corriendo
         if self._running.is_set():
             logger.warning("Pipeline ya está corriendo")
             return
@@ -49,6 +55,7 @@ class DetectionPipeline:
         logger.info("Pipeline iniciado correctamente")
 
     def stop(self) -> None:
+        # Detiene el hilo y drena correctamente
         logger.info("Deteniendo pipeline...")
         self._running.clear()
         if self._worker and self._worker.is_alive():
@@ -56,6 +63,11 @@ class DetectionPipeline:
         logger.info("Pipeline detenido")
 
     def _loop(self) -> None:
+        # Bucle principal:
+        # - Extrae frames del análisis.
+        # - Respeta intervalo de detección.
+        # - Ejecuta inferencia y loguea latencia.
+        # - Publica resultados y maneja errores sin detener la UI.
         logger.info("Loop de detección iniciado")
         warmup_done = False
         inference_count = 0
@@ -131,6 +143,7 @@ class DetectionPipeline:
         logger.info("Loop de detección finalizado")
 
     def _offer(self, batch: DetectionBatch) -> None:
+        # Inserta en cola sin bloquear; si está llena, descarta el elemento más antiguo
         try:
             self.results_queue.put_nowait(batch)
         except queue.Full:

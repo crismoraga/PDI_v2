@@ -1,4 +1,8 @@
 """Gamification system for ZDex - achievements, stats, and progression."""
+# Gestiona:
+# - Estadísticas por especie (avistamientos, ubicaciones, confianza).
+# - Logros con progreso y desbloqueo.
+# - Persistencia JSON de stats y achievements.
 from __future__ import annotations
 
 import json
@@ -47,18 +51,10 @@ class Achievement:
     @property
     def is_complete(self) -> bool:
         return self.progress >= self.target
-    
-    def to_dict(self) -> Dict:
-        return asdict(self)
-    
-    @classmethod
-    def from_dict(cls, data: Dict) -> "Achievement":
-        return cls(**data)
-
 
 class GamificationSystem:
     """Manages gamification features - achievements, stats, progression."""
-    
+    # Carga/guarda JSON, actualiza progresos y desbloqueos
     def __init__(
         self,
         stats_path: Path | None = None,
@@ -130,6 +126,7 @@ class GamificationSystem:
     
     def _initialize_achievements(self) -> None:
         """Initialize achievement definitions."""
+        # Define el catálogo base de logros y preserva estado de desbloqueo
         default_achievements = [
             Achievement(
                 id="first_capture",
@@ -225,6 +222,7 @@ class GamificationSystem:
         Record a new animal sighting and update stats.
         Returns list of newly unlocked achievements.
         """
+        # Actualiza conteos, ubicaciones, confianza; graba y evalúa logros
         newly_unlocked = []
         
         # Update species stats
@@ -257,6 +255,7 @@ class GamificationSystem:
     
     def _check_achievements(self, common_name: str, location: str) -> List[Achievement]:
         """Check and unlock achievements based on current stats."""
+        # Suma progresos y desbloquea por thresholds (primer captura, especies únicas, etc.)
         newly_unlocked = []
         
         # First capture
@@ -335,6 +334,7 @@ class GamificationSystem:
     
     def get_stats_summary(self) -> Dict:
         """Get summary of all statistics."""
+        # Construye resumen para UI (totales, logros, top especies, tiempos relativos)
         from datetime import datetime, timezone
         
         # Convert species stats to dict with relative time
@@ -389,7 +389,7 @@ class GamificationSystem:
         return [a for a in self.achievements.values() if not a.unlocked]
 
 
-# Global instance
+# Instancia global
 GAMIFICATION = GamificationSystem()
 
 

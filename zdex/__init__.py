@@ -1,4 +1,5 @@
 """Core package for the ZDex desktop application."""
+# Re-exporta APP_NAME y expone run_app con import perezoso para evitar cargar UI/Torch en CLIs livianos
 
 from __future__ import annotations
 

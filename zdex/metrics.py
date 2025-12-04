@@ -1,4 +1,7 @@
 """Centralized metrics logging utilities for ZDex."""
+# Logger JSONL thread-safe:
+# - detection, capture, latency.
+# - Sanitiza tipos numpy antes de serializar.
 from __future__ import annotations
 
 import json
@@ -58,12 +61,14 @@ class MetricsLogger:
     """Thread-safe JSONL logger for evaluation metrics."""
 
     def __init__(self) -> None:
+        # Prepara rutas y lock para escritura concurrente segura
         metrics_dir = config.DATA_DIR / "metrics"
         metrics_dir.mkdir(parents=True, exist_ok=True)
         self._log_path = metrics_dir / "events.jsonl"
         self._lock = threading.Lock()
 
     def _append(self, payload: dict) -> None:
+        # Normaliza numpy a tipos nativos y escribe línea JSON en events.jsonl
         # Sanitiza numpy types para que sean serializables por JSON
         def _sanitize(obj):
             if np is not None:
@@ -102,6 +107,7 @@ class MetricsLogger:
         bbox_area: Optional[int],
         detections_in_frame: int,
     ) -> None:
+        # Registra un evento de detección con metadatos clave
         record = DetectionMetricsRecord(
             event="detection",
             timestamp=time.time(),
@@ -128,6 +134,7 @@ class MetricsLogger:
         location: str,
         auto_capture: bool,
     ) -> None:
+        # Registra una captura (incluye verdad terreno, latencia y modalidad)
         record = CaptureMetricsRecord(
             event="capture",
             timestamp=time.time(),
@@ -150,6 +157,7 @@ class MetricsLogger:
         duration_ms: float,
         metadata: Optional[dict[str, Any]] = None,
     ) -> None:
+        # Registra una muestra de latencia de etapas internas (inference, etc.)
         record = LatencyRecord(
             event="latency",
             timestamp=time.time(),

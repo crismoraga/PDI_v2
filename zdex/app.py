@@ -1,4 +1,8 @@
 """Tkinter application launcher for ZDex."""
+# UI principal:
+# - Configura ventana, estilos y tabs (Detección actual, Pokédex, Logros).
+# - Arranca cámara y pipeline; renderiza frames y detecciones.
+# - Gestiona captura manual/auto, Wikipedia y gamificación.
 from __future__ import annotations
 
 import logging
@@ -88,6 +92,7 @@ class ZDexApp:
         logger.info("ZDex inicializado correctamente. Ventana lista.")
 
     def _build_layout(self) -> None:
+        # Construye layout con tabs y paneles personalizados
         header = ttk.Frame(self.root, style="Header.TFrame", padding=(24, 16))
         header.pack(fill="x")
         title = ttk.Label(header, text=config.APP_NAME, style="Header.TLabel")
@@ -187,6 +192,7 @@ class ZDexApp:
         self.stats_panel.pack(fill="both", expand=True)
 
     def _on_start_camera(self) -> None:
+        # Handler para iniciar cámara y pipeline; activa polling periódico
         logger.info("Usuario presionó 'Iniciar cámara'")
         try:
             self.camera.start()
@@ -205,6 +211,7 @@ class ZDexApp:
             messagebox.showerror(config.APP_NAME, f"Error al iniciar cámara:\n{e}")
 
     def _poll_frames(self) -> None:
+        # Toma frames de la cola y actualiza el canvas
         if not self._polling_active:
             return
         try:
@@ -219,6 +226,8 @@ class ZDexApp:
         self.root.after(config.POLL_INTERVAL_MS, self._poll_frames)
 
     def _poll_detections(self) -> None:
+        # Lee batches de detección y actualiza estado/UI
+        # Incluye lógica de auto-captura con countdown en pantalla
         if not self._polling_active:
             return
         updated = False
@@ -312,6 +321,7 @@ class ZDexApp:
         self._handle_detection_update()
 
     def _on_capture(self) -> None:
+        # Guarda captura, pregunta validación, loguea métricas y muestra notificaciones
         detection = self._current_detection
         if detection is None or self._latest_frame is None:
             messagebox.showinfo(config.APP_NAME, "No hay detecciones para capturar aún.")
@@ -487,12 +497,14 @@ class ZDexApp:
         self.root.destroy()
 
     def run(self) -> None:
+        # Inicia el mainloop de Tkinter
         logger.info("Iniciando mainloop de Tkinter...")
         self.root.mainloop()
         logger.info("Aplicación cerrada.")
 
 
 def run_app() -> None:
+    # Entrada simple para lanzar la app con manejo de errores
     logger.info("=== Iniciando ZDex ===")
     try:
         app = ZDexApp()

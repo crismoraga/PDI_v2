@@ -29,6 +29,7 @@ class SpeciesInfoPanel(ttk.Frame):
     """Shows details for the selected detection along with Wikipedia info."""
 
     def __init__(self, master: tk.Misc) -> None:
+        # Construye la ficha con título, detalles, resumen, imagen y link
         super().__init__(master, style="Panel.TFrame", padding=16)
         self.columnconfigure(0, weight=1)
         self._image_ref: Optional[ImageTk.PhotoImage] = None
@@ -57,6 +58,7 @@ class SpeciesInfoPanel(ttk.Frame):
         self._history_stats.grid(row=6, column=0, sticky="w", pady=(12, 0))
 
     def clear(self) -> None:
+        # Limpia todos los campos cuando no hay detección activa
         self._title.configure(text="Esperando detección…")
         self._details.configure(text="")
         self._summary.configure(text="")
@@ -67,6 +69,10 @@ class SpeciesInfoPanel(ttk.Frame):
         self._history_stats.configure(text="")
 
     def update_context(self, context: SpeciesDisplayContext) -> None:
+        # Actualiza la ficha según:
+        # - detection: nombre y confianza
+        # - wikipedia: resumen, imagen y enlace
+        # - history: estadísticas de avistamientos previos
         detection = context.detection
         wikipedia = context.wikipedia
         history = context.history
@@ -105,6 +111,7 @@ class SpeciesInfoPanel(ttk.Frame):
             self._history_stats.configure(text="Sin capturas previas.")
 
     def _load_image(self, url: str) -> None:
+        # Descarga imagen de Wikipedia y la ajusta a un tamaño máximo
         try:
             response = requests.get(url, timeout=5)
             response.raise_for_status()
@@ -121,6 +128,7 @@ class SpeciesInfoPanel(ttk.Frame):
             self._image_ref = None
 
     def _open_link(self, event: tk.Event[tk.Misc]) -> None:  # pragma: no cover - UI only
+        # Abre la página de Wikipedia en el navegador por defecto
         if not self._link_url:
             return
         import webbrowser
@@ -132,6 +140,7 @@ class CaptureHistoryPanel(ttk.Frame):
     """Displays a rolling list of captured species in Pokédex style."""
 
     def __init__(self, master: tk.Misc) -> None:
+        # Construye lista scrollable con tarjetas por especie capturada
         super().__init__(master, style="Panel.TFrame", padding=16)
         self.columnconfigure(0, weight=1)
         
@@ -171,6 +180,9 @@ class CaptureHistoryPanel(ttk.Frame):
         self._item_labels: list[ttk.Frame] = []
 
     def render(self, histories: Iterable[SpeciesCaptureHistory]) -> None:
+        # Renderiza tarjetas:
+        # - Ordena por última vez vista.
+        # - Muestra emoji, nombre, científico, conteo y metadatos (ubicación, hora relativa).
         # Clear existing items
         for frame in self._item_labels:
             frame.destroy()
@@ -321,6 +333,7 @@ class StatsPanel(ttk.Frame):
     """Displays gamification stats, achievements, and top species."""
     
     def __init__(self, master: tk.Misc) -> None:
+        # Panel scrollable con resumen general y secciones (top especies, logros)
         super().__init__(master, style="Panel.TFrame", padding=16)
         self.columnconfigure(0, weight=1)
         
@@ -350,6 +363,7 @@ class StatsPanel(ttk.Frame):
     
     def update_stats(self) -> None:
         """Refresh statistics display."""
+        # Reconstruye el panel: muestra totales, top 5, logros desbloqueados y pendientes
         # Clear existing widgets
         for widget in self._scrollable_frame.winfo_children():
             widget.destroy()

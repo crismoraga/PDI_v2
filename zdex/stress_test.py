@@ -2,6 +2,8 @@
 Script de Stress Test para ZDex.
 Genera 100,000+ eventos sintéticos para validar robustez, métricas y visualización.
 """
+# - Crea detecciones y capturas con distribuciones de latencia y confianza.
+# - Escribe un JSONL grande en data/metrics/events.jsonl para pruebas de rendimiento UI/métricas.
 import json
 import random
 import time
@@ -39,6 +41,7 @@ CAMERA_PROFILES = [
 
 def load_species_list():
     """Load a large list of species from taxonomy_release.txt"""
+    # Intenta cargar un catálogo amplio; si falla, usa una lista de respaldo
     species = []
     taxonomy_path = Path("taxonomy_release.txt")
     if taxonomy_path.exists():
@@ -61,6 +64,10 @@ def load_species_list():
     return species
 
 def generate_stress_data(num_events=100000):
+    # Bucle principal: sintetiza eventos con ruido temporal y condiciones variadas
+    # - Mezcla de latencias (normal/alta carga/picos).
+    # - Porcentaje de capturas y simulación de errores en clasificación.
+    # - Guarda incremental y reporta progreso cada 10k eventos.
     print(f"🚀 Iniciando Stress Test EXTENSO: Generando {num_events} eventos...")
     print("🔥 Modo: DESPIADADO (Alta variabilidad, picos de latencia, errores)")
     
@@ -196,4 +203,5 @@ def generate_stress_data(num_events=100000):
     print("✅ Stress Test EXTENSO completado exitosamente.")
 
 if __name__ == "__main__":
+    # Punto de entrada: genera 100k eventos por defecto
     generate_stress_data(100000)

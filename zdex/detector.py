@@ -1,4 +1,8 @@
 """Detection with YOLOv12 and classification via SpeciesNet."""
+# Motor de detección:
+# - Selección de dispositivo (CUDA/MPS/DirectML/CPU).
+# - Carga pesos YOLO y clasificador SpeciesNet.
+# - Inferencia por frame; filtra por clases animales, normaliza bboxes y clasifica crops.
 from __future__ import annotations
 
 import logging
@@ -49,6 +53,7 @@ class DetectionEngine:
     """Encapsulates the detector-classifier stack and preprocessing helpers."""
 
     def __init__(self) -> None:
+        # Inicializa dispositivos, carga modelos y prepara locks/softmax
         logger.info("Inicializando DetectionEngine...")
         self._device, self._predict_device_label, self._map_location = self._select_device()
         logger.info(f"Dispositivo seleccionado: {self._device} (predicción: {self._predict_device_label}, map_location: {self._map_location})")
@@ -71,6 +76,7 @@ class DetectionEngine:
         logger.info("DetectionEngine inicializado correctamente")
 
     def _select_device(self) -> tuple[torch.device | Any, str | None, Union[str, torch.device]]:
+        # Prioriza CUDA, luego MPS, intenta DirectML, y finalmente CPU
         if torch.cuda.is_available():
             device = torch.device("cuda")
             return device, "cuda", device
@@ -89,6 +95,7 @@ class DetectionEngine:
         return device, "cpu", device
 
     def _ensure_detector_weights(self) -> None:
+        # Descarga pesos YOLO si no existen (con verificación básica de tamaño)
         if config.DETECTOR_PATH.exists():
             return
         import requests
@@ -107,6 +114,7 @@ class DetectionEngine:
             raise IOError("Incomplete download of detector weights")
 
     def _load_detector(self) -> YOLO:
+        # Carga YOLOv12, setea overrides (conf/imgsz/etc) y migra al dispositivo
         self._ensure_detector_weights()
         logger.info(f"Cargando modelo YOLOv12 desde {config.DETECTOR_PATH}...")
         model = YOLO(str(config.DETECTOR_PATH))
@@ -123,6 +131,10 @@ class DetectionEngine:
 
     def infer(self, frame_bgr: np.ndarray, timestamp: float | None = None) -> List[DetectionResult]:
         """Run detection and classification on a single frame."""
+        # Ejecuta predict() de YOLO y procesa boxes:
+        # - Filtra por ID de clase animal y confianza.
+        # - Recorta el área y pasa a clasificador.
+        # - Ordena resultados por score de clasificación.
         timestamp = timestamp or time.time()
         detections: List[DetectionResult] = []
         
@@ -197,6 +209,7 @@ class DetectionEngine:
         return detections
 
     def _classify(self, crop_bgr: np.ndarray) -> ClassificationResult:
+        # Prepara tensor y ejecuta clasificador SpeciesNet; devuelve top-k hipótesis
         rgb = cv2.cvtColor(crop_bgr, cv2.COLOR_BGR2RGB)
         prepared = self._prepare_tensor(rgb)
         with self._classifier_lock, torch.no_grad():
@@ -211,6 +224,7 @@ class DetectionEngine:
 
     def _prepare_tensor(self, image_rgb: np.ndarray) -> torch.Tensor:
         """Resize and normalise the crop for SpeciesNet input."""
+        # Redimensiona con padding al tamaño objetivo y normaliza a [0,1]
         target = config.CLASSIFIER_INPUT_SIZE
         h, w = image_rgb.shape[:2]
         scale = min(target / h, target / w)

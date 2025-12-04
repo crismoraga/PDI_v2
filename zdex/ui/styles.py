@@ -10,11 +10,11 @@ from .. import config
 def configure_styles(root: tk.Tk) -> None:
     style = ttk.Style(root)
     try:
-        style.theme_use("clam")
+        style.theme_use("clam")  # Usa tema 'clam' por compatibilidad multiplataforma
     except tk.TclError:  # pragma: no cover - depends on OS themes
         pass
 
-    # Accent button with gradient effect
+    # Botón principal de acción (rosa/accents)
     style.configure(
         "Accent.TButton",
         background=config.ACCENT_COLOR,
@@ -30,7 +30,7 @@ def configure_styles(root: tk.Tk) -> None:
         foreground=[("disabled", "#666666")]
     )
     
-    # Success button (for auto-capture)
+    # Botón de éxito (verde) usado en auto-captura
     style.configure(
         "Success.TButton",
         background="#22c55e",
@@ -45,18 +45,12 @@ def configure_styles(root: tk.Tk) -> None:
         background=[("pressed", "#16a34a"), ("active", "#4ade80")]
     )
 
-    style.configure(
-        "Primary.TFrame",
-        background="white",
-    )
-    style.configure(
-        "Panel.TFrame",
-        background=config.PANEL_BACKGROUND,
-    )
-    style.configure(
-        "Header.TFrame",
-        background=config.HEADER_BACKGROUND,
-    )
+    # Contenedores base y paneles
+    style.configure("Primary.TFrame", background="white")
+    style.configure("Panel.TFrame", background=config.PANEL_BACKGROUND)
+    style.configure("Header.TFrame", background=config.HEADER_BACKGROUND)
+
+    # Encabezados (título app y paneles)
     style.configure(
         "Header.TLabel",
         background=config.HEADER_BACKGROUND,
@@ -70,6 +64,8 @@ def configure_styles(root: tk.Tk) -> None:
         font=("Segoe UI", 16, "bold"),
         padding=8,
     )
+
+    # Texto de paneles (cuerpo)
     style.configure(
         "Panel.TLabel",
         background=config.PANEL_BACKGROUND,
@@ -78,40 +74,16 @@ def configure_styles(root: tk.Tk) -> None:
         wraplength=320,
         justify="left",
     )
-    style.configure(
-        "Stats.TLabel",
-        background=config.PANEL_BACKGROUND,
-        foreground="#334155",
-        font=("Segoe UI", 12, "bold"),
-    )
-    style.configure(
-        "StatsValue.TLabel",
-        background=config.PANEL_BACKGROUND,
-        foreground="#1f2937",
-        font=("Segoe UI", 12),
-    )
-    # Achievement label
-    style.configure(
-        "Achievement.TLabel",
-        background=config.PANEL_BACKGROUND,
-        foreground="#059669",
-        font=("Segoe UI", 11, "bold"),
-    )
-    # Location label
-    style.configure(
-        "Location.TLabel",
-        background=config.PANEL_BACKGROUND,
-        foreground="#0891b2",
-        font=("Segoe UI", 10),
-    )
+    # Etiquetas de métricas y valores
+    style.configure("Stats.TLabel", background=config.PANEL_BACKGROUND, foreground="#334155", font=("Segoe UI", 12, "bold"))
+    style.configure("StatsValue.TLabel", background=config.PANEL_BACKGROUND, foreground="#1f2937", font=("Segoe UI", 12))
+
+    # Etiquetas para logros y ubicación
+    style.configure("Achievement.TLabel", background=config.PANEL_BACKGROUND, foreground="#059669", font=("Segoe UI", 11, "bold"))
+    style.configure("Location.TLabel", background=config.PANEL_BACKGROUND, foreground="#0891b2", font=("Segoe UI", 10))
     
-    # Notebook (Tabs) - Pokédex style
-    style.configure(
-        "TNotebook",
-        background=config.PANEL_BACKGROUND,
-        borderwidth=0,
-        tabmargins=[2, 5, 2, 0]
-    )
+    # Notebook estilo Pokédex (tabs)
+    style.configure("TNotebook", background=config.PANEL_BACKGROUND, borderwidth=0, tabmargins=[2, 5, 2, 0])
     style.configure(
         "TNotebook.Tab",
         background="#e2e8f0",

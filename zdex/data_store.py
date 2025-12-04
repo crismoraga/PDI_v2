@@ -1,4 +1,7 @@
 """Persistent storage for captured animal observations."""
+# Persiste capturas por especie en captures.json y:
+# - Escribe last_detection.json con la última captura.
+# - Activa capture_flag.json para notificar a integraciones (p.ej. Discord bot).
 from __future__ import annotations
 
 import json
@@ -31,6 +34,7 @@ class CaptureEvent:
 @dataclass
 class SpeciesCaptureHistory:
     """Aggregated capture data for a given species."""
+    # Incluye metadatos y lista de eventos de captura
 
     class_index: int
     label_uuid: str
@@ -83,6 +87,7 @@ class SpeciesCaptureHistory:
 
 class CaptureStore:
     """JSON-backed persistence for user captures."""
+    # Carga/guarda el store; ofrece APIs para registrar y consultar capturas
 
     def __init__(self, store_path: Path | None = None) -> None:
         self._store_path = store_path or config.CAPTURE_STORE_PATH
@@ -105,6 +110,9 @@ class CaptureStore:
             self._records[uuid] = history
 
     def _persist(self, new_capture: bool = False) -> None:
+        # Guarda store completo y también:
+        # - Actualiza last_detection.json con la captura más reciente.
+        # - Activa capture_flag.json solo si hubo nueva captura.
         self._store_path.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             "species": {uuid: history.to_dict() for uuid, history in self._records.items()}
@@ -160,6 +168,7 @@ class CaptureStore:
         location: str,
         notes: Optional[str] = None,
     ) -> SpeciesCaptureHistory:
+        # Añade captura a la especie, persiste y marca bandera de nueva captura
         history = self._records.get(label.uuid)
         if history is None:
             history = SpeciesCaptureHistory(

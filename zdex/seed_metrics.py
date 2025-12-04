@@ -1,4 +1,6 @@
 """Script para generar datos iniciales de evaluación desde stats.json y captures.json."""
+# Lee archivos persistidos y crea eventos 'detection' y 'capture' sintéticos
+# para poblar data/metrics/events.jsonl y facilitar pruebas de reportes.
 from __future__ import annotations
 
 import json
@@ -13,6 +15,7 @@ from .metrics import METRICS
 
 def _parse_iso(stamp: str) -> float:
     """Parse ISO timestamp to Unix epoch."""
+    # Convierte 'YYYY-MM-DDTHH:MM:SSZ' a epoch; fallback a ahora si falla
     try:
         dt = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
         return dt.timestamp()
@@ -25,6 +28,7 @@ def seed_from_existing_data() -> int:
     Read stats.json and captures.json and generate synthetic detection/capture events
     so that metrics_report has data to analyze.  Returns the number of events written.
     """
+    # Recorre stats/captures y loguea eventos a METRICS
     stats_path = config.DATA_DIR / "stats.json"
     captures_path = config.DATA_DIR / "captures.json"
     count = 0
@@ -82,6 +86,7 @@ def seed_from_existing_data() -> int:
 
 
 def main() -> int:
+    # Punto de entrada CLI: ejecuta el seeding y reporta cantidad escrita
     print("Generando datos de evaluacion desde stats.json y captures.json...")
     n = seed_from_existing_data()
     print(f"Se escribieron {n} eventos en data/metrics/events.jsonl")

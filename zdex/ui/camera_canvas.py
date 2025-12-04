@@ -16,6 +16,7 @@ class CameraCanvas(ttk.Frame):
     """Displays camera frames and detection overlays within a ttk.Frame."""
 
     def __init__(self, master: tk.Misc, *, width: int | None = None, height: int | None = None) -> None:
+        # Inicializa canvas, tags de overlays y estado (contador, countdown)
         super().__init__(master, style="Primary.TFrame")
         self._width = width or config.FRAME_DISPLAY_MAX_WIDTH
         self._height = height or config.FRAME_DISPLAY_MAX_HEIGHT
@@ -36,6 +37,10 @@ class CameraCanvas(ttk.Frame):
         self._auto_capture_time_remaining: float | None = None
 
     def render(self, frame_bgr: np.ndarray, detections: Sequence[DetectionResult] = ()) -> None:
+        # Dibuja la imagen y superpone:
+        # - BBoxes y etiquetas (desde detections).
+        # - Indicador de estado (punto verde/gris y texto FPS).
+        # - Cuenta regresiva de auto-captura si aplica.
         if frame_bgr is None:
             return
         self._frame_count += 1
@@ -92,6 +97,7 @@ class CameraCanvas(ttk.Frame):
             )
 
     def _prepare_image(self, frame_bgr: np.ndarray) -> tuple[Image.Image, float, int, int]:
+        # Ajusta el frame al tamaño del canvas con letterbox y retorna escala/offsets
         rgb = frame_bgr[:, :, ::-1]  # BGR -> RGB without OpenCV dependency here
         frame = Image.fromarray(rgb)
         frame_ratio = frame.width / frame.height
@@ -117,6 +123,7 @@ class CameraCanvas(ttk.Frame):
         offset_x: int,
         offset_y: int,
     ) -> None:
+        # Dibuja rectángulos y etiquetas para cada detección transformando coordenadas al canvas
         for tag in self._current_boxes:
             self._canvas.delete(tag)
         self._current_boxes.clear()
@@ -171,6 +178,7 @@ class CameraCanvas(ttk.Frame):
 
     def flash_capture(self) -> None:
         """Play a brief flash animation to signal a successful capture."""
+        # Efecto de flash blanco semitransparente con fade-out
         self._canvas.delete(self._flash_tag)
         overlay = self._canvas.create_rectangle(
             0,
@@ -195,6 +203,7 @@ class CameraCanvas(ttk.Frame):
     
     def set_auto_capture_countdown(self, seconds: float | None) -> None:
         """Update the auto-capture countdown display."""
+        # Actualiza el estado interno para mostrar/ocultar el contador
         self._auto_capture_time_remaining = seconds
 
 

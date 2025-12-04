@@ -1,4 +1,8 @@
 """Camera capture utilities for streaming frames into the application."""
+# Hilo de captura con OpenCV:
+# - Publica frames en dos colas (UI y análisis).
+# - Gestiona FPS y tamaño.
+# - Evita bloqueo usando put_nowait con política de descarte.
 from __future__ import annotations
 
 import logging
@@ -26,6 +30,7 @@ class CameraController:
     """Background thread that continuously grabs frames from OpenCV."""
 
     def __init__(self, device_id: int = config.CAMERA_DEVICE_ID) -> None:
+        # Inicializa colas y estado del hilo
         self.device_id = device_id
         self.frame_queue: "queue.Queue[FramePacket]" = queue.Queue(maxsize=config.FRAME_QUEUE_SIZE)
         self.analysis_queue: "queue.Queue[FramePacket]" = queue.Queue(maxsize=config.DETECTION_QUEUE_SIZE)
@@ -35,6 +40,7 @@ class CameraController:
         self._capture = None  # will hold cv2.VideoCapture
 
     def start(self) -> None:
+        # Arranca el hilo de captura
         if self._running.is_set():
             logger.warning("Cámara ya está corriendo")
             return
@@ -45,6 +51,7 @@ class CameraController:
         logger.info("Thread de captura iniciado")
 
     def stop(self) -> None:
+        # Detiene el hilo y libera el dispositivo
         self._running.clear()
         if self._capture_thread and self._capture_thread.is_alive():
             self._capture_thread.join(timeout=1.5)
@@ -54,6 +61,7 @@ class CameraController:
                 self._capture = None
 
     def _capture_loop(self) -> None:
+        # Bucle de lectura de frames: configura cámara, lee, empaqueta y publica en colas
         logger.info("Abriendo dispositivo de video...")
         with self._lock:
             capture = cv2.VideoCapture(self.device_id)
@@ -86,6 +94,7 @@ class CameraController:
 
     @staticmethod
     def _offer(target_queue: "queue.Queue[FramePacket]", packet: FramePacket) -> None:
+        # Inserta sin bloquear; si la cola está llena, descarta el elemento más viejo
         try:
             target_queue.put_nowait(packet)
         except queue.Full:

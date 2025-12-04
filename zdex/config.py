@@ -1,4 +1,5 @@
 """Global configuration for the ZDex application."""
+# Rutas base, archivos de modelo, parámetros de detección/visualización y ajustes de UI/gamificación
 from __future__ import annotations
 
 from pathlib import Path
@@ -27,7 +28,7 @@ DETECTOR_PATH = MODEL_CACHE_DIR / DETECTOR_FILENAME
 
 FRAME_QUEUE_SIZE = 2
 DETECTION_QUEUE_SIZE = 2
-CAMERA_DEVICE_ID = 10
+CAMERA_DEVICE_ID = 0
 
 DETECTION_CONFIDENCE_THRESHOLD = 0.25  # Reducido para detectar más animales
 CLASSIFICATION_TOP_K = 3
@@ -62,6 +63,7 @@ DETECTION_GLOW_DURATION_MS = 800  # Duración de animación de brillo
 CAPTURE_ANIMATION_DURATION_MS = 1500  # Animación de captura
 FADE_IN_DURATION_MS = 300  # Fade in para paneles
 ANIMAL_CLASS_IDS = {
+    # IDs de COCO para clases de animales (filtrado en detección)
 	14,  # bird
 	15,  # cat
 	16,  # dog

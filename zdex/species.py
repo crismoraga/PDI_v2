@@ -1,4 +1,6 @@
 """Utilities for loading and querying SpeciesNet label metadata."""
+# Carga y expone metadatos de clases (labels) del archivo de etiquetas de SpeciesNet.
+# Provee búsqueda por nombre y acceso por índice/UUID
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,6 +14,7 @@ from . import config
 class SpeciesLabel:
     """Represents a single class entry from the SpeciesNet label manifest."""
 
+    # Campos que identifican taxonomía y nombres comunes/científicos
     index: int
     uuid: str
     kingdom_class: str
@@ -24,6 +27,7 @@ class SpeciesLabel:
     @property
     def scientific_name(self) -> str:
         """Return the concatenated binomial name if available."""
+        # Construye un nombre científico amigable con capitalización
         genus = self.genus.strip()
         species = self.species.strip()
         if genus and species:
@@ -41,6 +45,7 @@ class SpeciesLabel:
 class SpeciesIndex:
     """Load the SpeciesNet label file and provide lookup helpers."""
 
+    # Al iniciar, lee el archivo labels y construye listas/mapas para consultas
     def __init__(self, label_path: Path | None = None) -> None:
         self._label_path = label_path or config.LABELS_PATH
         self._labels: List[SpeciesLabel] = []
@@ -54,6 +59,7 @@ class SpeciesIndex:
         return iter(self._labels)
 
     def _load(self) -> None:
+        # Parse línea por línea; tolera entradas incompletas añadiendo columnas vacías
         if not self._label_path.exists():
             raise FileNotFoundError(f"Label file not found: {self._label_path}")
 
@@ -85,10 +91,11 @@ class SpeciesIndex:
         return self._by_uuid.get(uuid)
 
     def search(self, query: str, limit: int = 10) -> List[SpeciesLabel]:
+        # Búsqueda simple por substring en display_name (case-insensitive)
         query_lower = query.lower()
         matches = [label for label in self._labels if query_lower in label.display_name.lower()]
         return matches[:limit]
 
 
-# Instantiate a shared index on module import to avoid repeated disk reads.
+# Índice compartido a nivel de módulo para evitar lecturas repetidas de disco
 INDEX = SpeciesIndex()

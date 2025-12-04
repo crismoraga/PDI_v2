@@ -1,4 +1,6 @@
 """Geolocation utilities using IP-based location."""
+# Servicio simple que consulta ipapi.co para obtener ciudad/región/país por IP.
+# Cachea el resultado para evitar múltiples llamadas
 from __future__ import annotations
 
 import logging
@@ -22,6 +24,7 @@ class Location:
     @property
     def display_name(self) -> str:
         """Return human-readable location string."""
+        # Construye "Ciudad, Región, País" cuando existen campos
         parts = []
         if self.city:
             parts.append(self.city)
@@ -34,7 +37,7 @@ class Location:
 
 class GeolocatorService:
     """IP-based geolocation service."""
-    
+    # Usa requests.Session con UA personalizado; maneja errores con logs
     def __init__(self):
         self._session = requests.Session()
         self._session.headers.update({
@@ -77,11 +80,12 @@ class GeolocatorService:
     
     def refresh_location(self) -> Optional[Location]:
         """Force refresh of cached location."""
+        # Limpia el cache y vuelve a consultar
         self.get_current_location.cache_clear()
         return self.get_current_location()
 
 
-# Global instance
+# Instancia global reutilizable
 GEOLOCATOR = GeolocatorService()
 
 

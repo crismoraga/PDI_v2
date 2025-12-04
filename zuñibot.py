@@ -1,15 +1,14 @@
+# Bot de Discord:
+# - Comandos para unirse/salir de canales de voz y gestionar estado de orador en Escenarios.
+# - Sondea archivos de ZDex (capture_flag.json y last_detection.json) para anunciar nuevas capturas.
 import discord
 from discord.ext import commands
 import os
 import json
 from pathlib import Path
 import asyncio
-# Usa las rutas de zdex.config para coincidir con data_store
 from zdex import config as zdex_config
 
-# BASE_DIR y DATA_DIR locales ya no se usan para archivos de captura
-# BASE_DIR = Path(__file__).resolve().parent.parent
-# DATA_DIR = BASE_DIR / "data"
 LAST_DET_PATH = zdex_config.DATA_DIR / "last_detection.json"
 FLAG_PATH = zdex_config.DATA_DIR / "capture_flag.json"
 
@@ -35,39 +34,32 @@ def _read_last_detection():
         return None
 
 # --- 1. Configuración de Intents ---
+# Habilita lectura de contenido de mensajes y estados de voz (requerido para comandos)
 intents = discord.Intents.default()
-intents.message_content = True  # Necesario para leer el contenido de los comandos de texto
-intents.voice_states = True     # Necesario para manejar estados de voz (saber dónde está el usuario)
+intents.message_content = True
+intents.voice_states = True
 
-# --- 2. Instancia ÚNICA del Bot (Usando commands.Bot) ---
-# Usamos commands.Bot que hereda de discord.Client y añade el manejo de comandos.
-# Definimos el prefijo (ej: !) aquí.
+# --- 2. Instancia ÚNICA del Bot ---
 bot = commands.Bot(command_prefix='!', intents=intents)
-
-# Tareas de sondeo por servidor (guild_id -> asyncio.Task)
 POLL_TASKS: dict[int, asyncio.Task] = {}
 
-# --- 3. Evento: El bot está listo (Usando la instancia 'bot') ---
 @bot.event
 async def on_ready():
-    # Eliminamos el evento on_message anterior para evitar conflictos
-    # con el manejo de comandos
+    # Evento de inicio del bot
     print(f'Hemos iniciado sesión como {bot.user}')
 
-# --- 4. Comando simple: !hola (Usando @bot.command) ---
 @bot.command(name='hola')
 async def greet(ctx):
     """Responde con un saludo. Uso: !hola"""
-    # Los comandos reciben un objeto 'Context' (ctx) automáticamente
     await ctx.send(f'¡Hola! Mi nombre es {bot.user.name}.')
 
-# --- 5. Comando para UNIRSE a un canal de voz (Usando @bot.command) ---
 @bot.command(name='unirse', aliases=['join', 'entrar'])
 async def join(ctx):
     """
-    Hace que el bot se una al canal de voz y, si es un Escenario, quita el "suppress" del invocador.
-    Además, mutea y ensordece al invocador.
-    Uso: !unirse
+    Une el bot al canal de voz del invocador y:
+    - Mutea/ensordece al invocador.
+    - Intenta ponerlo como orador si es un Escenario.
+    - Sondea nuevas capturas de ZDex por tiempo limitado y arranca sondeo persistente.
     """
     member = ctx.author
 
@@ -170,8 +162,8 @@ async def join(ctx):
 @bot.command(name='salir', aliases=['leave', 'desconectar'])
 async def leave(ctx):
     """
-    Hace que el bot salga del canal de voz.
-    Comando de uso: !salir
+    Hace que el bot salga del canal de voz y cancela tareas de sondeo.
+    Uso: !salir
     """
     # 1. Verifica si el bot está conectado a un canal de voz
     if ctx.voice_client:
@@ -191,7 +183,6 @@ async def leave(ctx):
 async def unsuppress_video(ctx, member: discord.Member, *, reason=None):
     """
     Pasa a orador a un usuario en un Escenario (Stage).
-    Nota: No es posible forzar la cámara en canales de voz normales.
     Uso: !permitirvideo @usuario [razón]
     """
     if member.voice and member.voice.channel:
@@ -220,7 +211,6 @@ async def unsuppress_video(ctx, member: discord.Member, *, reason=None):
 async def suppress_video(ctx, member: discord.Member, *, reason=None):
     """
     Pasa a oyente (suppress=True) a un usuario en un Escenario.
-    Nota: No se puede apagar la cámara por API en canales de voz normales.
     Uso: !quitarvideo @usuario [razón]
     """
     if member.voice and member.voice.channel:
@@ -239,6 +229,5 @@ async def suppress_video(ctx, member: discord.Member, *, reason=None):
         await ctx.send(f"**{member.display_name}** no está en un canal de voz.")
 
 # --- 6. Inicia el bot ---
-# Usamos la instancia 'bot' para ejecutarlo.
-# Reemplaza 'ZUNIBOT_TOKEN' si el nombre de la variable de entorno es diferente
+# Requiere variable de entorno ZUNIBOT_TOKEN con el token del bot
 bot.run(os.getenv('ZUNIBOT_TOKEN'))

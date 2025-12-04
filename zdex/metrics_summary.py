@@ -2,6 +2,7 @@
 Simple script to compute metrics summary from data/metrics/events.jsonl
 Outputs a JSON summary used by README and automated reporting.
 """
+# Lee JSONL, calcula estadísticas básicas (mean/median/p95), precisión y accuracy por especie.
 import json
 import statistics
 from pathlib import Path
@@ -19,6 +20,8 @@ def read_events(path):
 
 
 def compute_summary(events):
+    # Agrega latencias de detección/captura y calcula métricas descriptivas.
+    # Deriva precisión global y accuracy por especie desde 'capture'.
     detection_latencies = [e["latency_ms"] for e in events if e["event"] == "detection" and "latency_ms" in e]
     capture_latencies = [e["latency_ms"] for e in events if e["event"] == "capture" and "latency_ms" in e]
     captures = [e for e in events if e["event"] == "capture"]
@@ -73,6 +76,7 @@ def compute_summary(events):
 
 
 def main():
+    # CLI: abre data/metrics/events.jsonl y imprime resumen JSON
     root = Path(__file__).resolve().parents[1]
     events_file = root / "data" / "metrics" / "events.jsonl"
     if not events_file.exists():

@@ -1,4 +1,7 @@
 """CLI utility to summarize ZDex evaluation metrics and generate charts."""
+# Herramienta de reporte:
+# - Resume detecciones y capturas (latencias, precisión).
+# - Opcionalmente genera gráficos PNG (si matplotlib está disponible).
 from __future__ import annotations
 
 import argparse
@@ -23,6 +26,7 @@ except ImportError:
 
 
 def _iter_records(path: Path) -> Iterator[dict[str, Any]]:
+    # Itera líneas JSONL tolerando errores de parseo
     with path.open("r", encoding="utf-8") as handle:
         for line_number, raw in enumerate(handle, 1):
             line = raw.strip()
@@ -35,6 +39,7 @@ def _iter_records(path: Path) -> Iterator[dict[str, Any]]:
 
 
 def _percentile(values: Iterable[float], pct: float) -> float:
+    # Percentil lineal entre valores ordenados
     ordered = sorted(values)
     if not ordered:
         return float("nan")
@@ -103,6 +108,8 @@ def _summarize_captures(records: Iterable[dict[str, Any]], top_n: int) -> None:
 
 def _generate_charts(records: List[dict[str, Any]], top_n: int) -> None:
     """Generate evaluation charts and save them as PNG files."""
+    # Construye histogramas, bar charts, heatmaps y una tarjeta resumen
+    # Guarda PNG/JPG en data/metrics/charts/
     if not HAS_MATPLOTLIB:
         print("\nmatplotlib no disponible - no se generan gráficos.")
         return
@@ -396,6 +403,7 @@ def _summarize_detections(records: Iterable[dict[str, Any]]) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # CLI: ruta de JSONL, top especies y bandera de gráficos
     default_path = config.DATA_DIR / "metrics" / "events.jsonl"
     parser = argparse.ArgumentParser(description="Genera un resumen de las métricas recogidas por ZDex.")
     parser.add_argument(

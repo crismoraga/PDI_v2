@@ -1,4 +1,8 @@
 """Wikipedia lookup helpers for enriching species information."""
+# Cliente perezoso de Wikipedia:
+# - Intenta en múltiples idiomas (config.WIKIPEDIA_LANG_PRIORITY).
+# - Recorta resúmenes largos.
+# - Resuelve imagen principal vía API REST.
 from __future__ import annotations
 
 import logging
@@ -17,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class WikipediaEntry:
+    # Contiene datos esenciales de una página de Wikipedia para mostrar en UI
     title: str
     summary: str
     page_url: str
@@ -26,7 +31,7 @@ class WikipediaEntry:
 
 class WikipediaFetcher:
     """Lazy Wikipedia client with multi-language fallback and caching."""
-
+    # Inicializa instancias wikipediaapi por idioma y una sesión requests
     def __init__(self, languages: Iterable[str] = config.WIKIPEDIA_LANG_PRIORITY) -> None:
         self._languages = tuple(languages)
         self._apis = {
@@ -40,6 +45,7 @@ class WikipediaFetcher:
         self._session = requests.Session()
 
     def fetch_for_terms(self, *terms: str) -> Optional[WikipediaEntry]:
+        # Itera por términos únicos y retorna la primera entrada válida encontrada
         seen = set()
         candidates = [term for term in terms if term and term.strip()]
         for candidate in candidates:
@@ -53,6 +59,7 @@ class WikipediaFetcher:
         return None
 
     def _fetch_candidate(self, candidate: str) -> Optional[WikipediaEntry]:
+        # Busca el título en cada idioma; si existe, construye WikipediaEntry y añade imagen
         for lang in self._languages:
             api = self._apis[lang]
             page = api.page(candidate)
@@ -74,6 +81,7 @@ class WikipediaFetcher:
     @lru_cache(maxsize=128)
     def _resolve_main_image(self, lang: str, title: str) -> Optional[str]:
         """Use the Wikimedia REST API to obtain a lead image."""
+        # Consulta /page/summary y extrae 'thumbnail.source' si está disponible
         try:
             response = self._session.get(
                 f"https://{lang}.wikipedia.org/api/rest_v1/page/summary/{quote(title)}",
