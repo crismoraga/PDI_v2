@@ -12,94 +12,110 @@ on:
         default: 'v3.0.0'
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build-portable:
+    runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          lfs: true
       
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
       
-      - name: Install dependencies
+      - name: Create portable package
         run: |
-          python -m pip install --upgrade pip
-          pip install pyinstaller
-          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-          pip install -r yolov12/requirements.txt
-      
-      - name: Build executable
-        run: |
-          python build_release.py
-      
-      - name: Upload Windows Executable
-        uses: actions/upload-artifact@v4
-        with:
-          name: ZDex-Windows
-          path: ZDex-v3.0-Windows.zip
+          mkdir -p release-portable
+          cp -r zdex release-portable/
+          cp run_zdex.py release-portable/
+          cp test_detection.py release-portable/ || true
+          cp taxonomy_release.txt release-portable/ || true
+          cp INSTALAR.bat release-portable/ || true
+          cp ZDex.bat release-portable/ || true
+          
+          # Create requirements.txt
+          cat > release-portable/requirements.txt << 'EOF'
+          # ZDex - Requisitos minimos
+          torch>=2.0.0
+          torchvision>=0.15.0
+          opencv-python>=4.8.0
+          pillow>=9.0.0
+          numpy>=1.24.0
+          requests>=2.28.0
+          ultralytics>=8.0.0
+          EOF
+          
+          # Create ZIP
+          cd release-portable && zip -r ../ZDex-Portable.zip . && cd ..
+          ls -la *.zip
       
       - name: Upload Portable Package
         uses: actions/upload-artifact@v4
         with:
           name: ZDex-Portable
-          path: ZDex-v3.0-Portable.zip
+          path: ZDex-Portable.zip
 
   create-release:
-    needs: build-windows
+    needs: build-portable
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
     
     steps:
-      - name: Download all artifacts
+      - name: Download artifacts
         uses: actions/download-artifact@v4
+        with:
+          name: ZDex-Portable
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: ZDex ${{ github.ref_name }}
+          name: "🦁 ZDex ${{ github.ref_name }} — Pokédex Evolution"
           body: |
             # 🦁 ZDex ${{ github.ref_name }}
             
-            ## 📥 Descargas
+            ## 📥 Descarga
             
             | Archivo | Descripción | Requisitos |
             |:---|:---|:---|
-            | **ZDex-Windows.zip** | Ejecutable standalone | Windows 10/11, 8GB RAM |
-            | **ZDex-Portable.zip** | Código fuente + scripts | Python 3.10+ |
+            | **ZDex-Portable.zip** | Código fuente + scripts | Python 3.10+, Windows/Linux/macOS |
             
             ## 🚀 Instalación Rápida (Windows)
             
-            1. Descarga `ZDex-Windows.zip`
+            1. Descarga `ZDex-Portable.zip`
             2. Extrae el ZIP
-            3. Ejecuta `ZDex.exe`
-            4. ¡Listo!
+            3. Ejecuta `INSTALAR.bat` (instala dependencias)
+            4. Ejecuta `ZDex.bat`
+            5. ¡Listo! 🎉
             
-            > ⚠️ Los modelos de IA se descargan automáticamente en la primera ejecución (~500 MB)
+            > ⚠️ **Primera ejecución:** Los modelos de IA se descargan automáticamente (~500 MB)
             
-            ## ✨ Novedades
+            ## ✨ Características
             
+            - 🔍 Detección en tiempo real con YOLOv12-Turbo
+            - 🧬 Clasificación de 3,489 especies con SpeciesNet
             - 🎮 Sistema de gamificación con 10 logros
-            - 🦎 Soporte para 3,489 especies
-            - 📊 Framework de evaluación integrado
             - 🌍 Geolocalización automática
             - 📚 Integración con Wikipedia
+            - 📊 Framework de evaluación (100K stress test)
             
-            ## 📖 Documentación
+            ## 📊 Métricas
             
-            - [README completo](https://github.com/crismoraga/PDI_v2)
-            - [Video Demo](https://youtu.be/MNIEpdeGOdA)
+            | Métrica | Resultado |
+            |:---|:---|
+            | Precisión Top-1 | 87.0% |
+            | Latencia media | 2.93s |
+            | Especies | 3,489 |
+            
+            ## 👥 Equipo
+            
+            Cristóbal Moraga, Clemente Mujica, Camilo Troncoso, Felipe Tapia, Iván Weber
             
             ---
-            *Universidad Técnica Federico Santa María — TEL328*
-          files: |
-            ZDex-Windows/ZDex-v3.0-Windows.zip
-            ZDex-Portable/ZDex-v3.0-Portable.zip
+            **Universidad Técnica Federico Santa María — TEL328**
+          files: ZDex-Portable.zip
           draft: false
           prerelease: false
         env:

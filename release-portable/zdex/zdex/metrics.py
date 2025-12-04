@@ -1,0 +1,173 @@
+"""Centralized metrics logging utilities for ZDex."""
+# Logger JSONL thread-safe:
+# - detection, capture, latency.
+# - Sanitiza tipos numpy antes de serializar.
+from __future__ import annotations
+
+import json
+import threading
+import time
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any, Iterable, Optional
+
+from . import config
+
+# Añade imports opcionales para detección de tipos numpy sin romper si no existe
+try:
+    import numpy as np
+except Exception:
+    np = None
+
+
+@dataclass
+class DetectionMetricsRecord:
+    event: str
+    timestamp: float
+    species_uuid: Optional[str]
+    species_name: Optional[str]
+    detection_confidence: Optional[float]
+    classification_score: Optional[float]
+    latency_ms: float
+    bbox_area: Optional[int]
+    detections_in_frame: int
+
+
+@dataclass
+class CaptureMetricsRecord:
+    event: str
+    timestamp: float
+    species_uuid: str
+    predicted_name: str
+    ground_truth_name: str
+    correct: bool
+    detection_confidence: float
+    classification_score: float
+    latency_ms: float
+    location: str
+    auto_capture: bool
+
+
+@dataclass
+class LatencyRecord:
+    event: str
+    timestamp: float
+    stage: str
+    duration_ms: float
+    metadata: dict[str, Any]
+
+
+class MetricsLogger:
+    """Thread-safe JSONL logger for evaluation metrics."""
+
+    def __init__(self) -> None:
+        # Prepara rutas y lock para escritura concurrente segura
+        metrics_dir = config.DATA_DIR / "metrics"
+        metrics_dir.mkdir(parents=True, exist_ok=True)
+        self._log_path = metrics_dir / "events.jsonl"
+        self._lock = threading.Lock()
+
+    def _append(self, payload: dict) -> None:
+        # Normaliza numpy a tipos nativos y escribe línea JSON en events.jsonl
+        # Sanitiza numpy types para que sean serializables por JSON
+        def _sanitize(obj):
+            if np is not None:
+                # numpy escalares
+                if isinstance(obj, (np.floating,)):
+                    return float(obj)
+                if isinstance(obj, (np.integer,)):
+                    return int(obj)
+                if isinstance(obj, (np.bool_,)):
+                    return bool(obj)
+                # numpy arrays -> listas de tipos nativos
+                if isinstance(obj, np.ndarray):
+                    return _sanitize(obj.tolist())
+            # colecciones
+            if isinstance(obj, dict):
+                return {k: _sanitize(v) for k, v in obj.items()}
+            if isinstance(obj, (list, tuple)):
+                return [_sanitize(v) for v in obj]
+            # deja otros tipos tal cual
+            return obj
+
+        safe_payload = _sanitize(payload)
+        line = json.dumps(safe_payload, ensure_ascii=False)
+        with self._lock:
+            with self._log_path.open("a", encoding="utf-8") as handle:
+                handle.write(line + "\n")
+
+    def log_detection_event(
+        self,
+        *,
+        species_uuid: Optional[str],
+        species_name: Optional[str],
+        detection_confidence: Optional[float],
+        classification_score: Optional[float],
+        latency_ms: float,
+        bbox_area: Optional[int],
+        detections_in_frame: int,
+    ) -> None:
+        # Registra un evento de detección con metadatos clave
+        record = DetectionMetricsRecord(
+            event="detection",
+            timestamp=time.time(),
+            species_uuid=species_uuid,
+            species_name=species_name,
+            detection_confidence=detection_confidence,
+            classification_score=classification_score,
+            latency_ms=latency_ms,
+            bbox_area=bbox_area,
+            detections_in_frame=detections_in_frame,
+        )
+        self._append(asdict(record))
+
+    def log_capture_event(
+        self,
+        *,
+        species_uuid: str,
+        predicted_name: str,
+        ground_truth_name: str,
+        correct: bool,
+        detection_confidence: float,
+        classification_score: float,
+        latency_ms: float,
+        location: str,
+        auto_capture: bool,
+    ) -> None:
+        # Registra una captura (incluye verdad terreno, latencia y modalidad)
+        record = CaptureMetricsRecord(
+            event="capture",
+            timestamp=time.time(),
+            species_uuid=species_uuid,
+            predicted_name=predicted_name,
+            ground_truth_name=ground_truth_name,
+            correct=correct,
+            detection_confidence=detection_confidence,
+            classification_score=classification_score,
+            latency_ms=latency_ms,
+            location=location,
+            auto_capture=auto_capture,
+        )
+        self._append(asdict(record))
+
+    def log_latency_sample(
+        self,
+        *,
+        stage: str,
+        duration_ms: float,
+        metadata: Optional[dict[str, Any]] = None,
+    ) -> None:
+        # Registra una muestra de latencia de etapas internas (inference, etc.)
+        record = LatencyRecord(
+            event="latency",
+            timestamp=time.time(),
+            stage=stage,
+            duration_ms=duration_ms,
+            metadata=metadata or {},
+        )
+        self._append(asdict(record))
+
+
+METRICS = MetricsLogger()
+
+__all__ = ["METRICS"]
