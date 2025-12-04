@@ -741,7 +741,7 @@ git push origin feature/nueva-funcionalidad
 Este proyecto está bajo la licencia **Apache 2.0**. Ver [LICENSE](LICENSE) para más detalles.
 
 ```
-Copyright 2024 ZDex Team — Universidad Técnica Federico Santa María
+Copyright 2025 ZDex Team — Universidad Técnica Federico Santa María
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
