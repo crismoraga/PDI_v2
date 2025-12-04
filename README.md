@@ -26,10 +26,20 @@
 <br/>
 
 <a href="https://youtu.be/MNIEpdeGOdA">
-<img src="https://img.youtube.com/vi/MNIEpdeGOdA/maxresdefault.jpg" width="700" alt="ZDex Demo"/>
+<img src="https://img.youtube.com/vi/MNIEpdeGOdA/maxresdefault.jpg" width="700" alt="ZDex Demo 1"/>
 </a>
 
-<sub>🎬 Click en la imagen para ver la demo completa en YouTube</sub>
+<sub> DEMO de detección con cámara remota - 🎬 Click en la imagen para ver la demo completa en YouTube</sub>
+
+<br/><br/>
+
+<br/>
+
+<a href="[https://youtu.be/MNIEpdeGOdA](https://youtu.be/yv-OxMOpeH4)">
+<img src="[https://img.youtube.com/vi/MNIEpdeGOdA/maxresdefault.jpg](https://i9.ytimg.com/vi/yv-OxMOpeH4/mqdefault.jpg?sqp=CMzYw8kG-oaymwEmCMACELQB8quKqQMa8AEB-AHUBoAC4AOKAgwIABABGBwgZChyMA8=&rs=AOn4CLBZUo9Vk6Wsaby4gPFjhvYzjPlDzA)" width="700" alt="ZDex Demo 2"/>
+</a>
+
+<sub> DEMO de detección de imagenes en pantalla - 🎬 Click en la imagen para ver la demo completa en YouTube</sub>
 
 <br/><br/>
 
