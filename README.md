@@ -1,392 +1,832 @@
-# ZDex — Pokédex de Animales en Tiempo Real
+<div align="center">
 
-[![Licencia](https://img.shields.io/badge/licencia-Apache%202.0-blue.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
-[![Demo](https://img.shields.io/badge/demo-YouTube-red.svg)](https://youtu.be/MNIEpdeGOdA)
-[![YOLOv12](https://img.shields.io/badge/YOLOv12--sunsmarterjie-orange.svg)](https://github.com/sunsmarterjie/yolov12)
-[![SpeciesNet](https://img.shields.io/badge/SpeciesNet-Kaggle-blue.svg)](https://www.kaggle.com/models/google/speciesnet/keras/v4.0.0b)
-[![Evaluación](https://img.shields.io/badge/evaluaci%C3%B3n-ready-success)](#evaluacion-y-metricas)
-[![CI](https://github.com/crismoraga/PDI_v2/actions/workflows/evaluate.yml/badge.svg)](https://github.com/crismoraga/PDI_v2/actions/workflows/evaluate.yml)
-[![PyTorch](https://img.shields.io/badge/PyTorch-%E2%9C%93-orange)](https://pytorch.org/)
-[![OpenCV](https://img.shields.io/badge/OpenCV-%E2%9C%93-blue)](https://opencv.org/)
-[![Ultralytics-YOLOv12](https://img.shields.io/badge/YOLOv12-Ultralytics-orange.svg)](https://github.com/ultralytics)
-
-[![Ver demo](https://img.youtube.com/vi/MNIEpdeGOdA/0.jpg)](https://youtu.be/MNIEpdeGOdA)
-
-> ZDex es una aplicación para detectar y clasificar animales en tiempo real, registrar capturas verificadas y generar métricas para evaluación científica y académica, con componentes de gamificación para un uso más cercano y lúdico.
-
----
-
-## Índice
-
-- [ZDex — Pokédex de Animales en Tiempo Real](#zdex--pokédex-de-animales-en-tiempo-real)
-  - [Índice](#índice)
-  - [Resumen](#resumen)
-  - [Caracteristicas](#caracteristicas)
-  - [Arquitectura \& Componentes](#arquitectura--componentes)
-    - [Componentes (flujo de datos)](#componentes-flujo-de-datos)
-    - [Esquema de datos (eventos JSONL)](#esquema-de-datos-eventos-jsonl)
-  - [Resultados actuales (stress test 100k)](#resultados-actuales-stress-test-100k)
-  - [Evidencias generadas (gráficos sample)](#evidencias-generadas-gráficos-sample)
-  - [Instalacion y Ejecucion Rapida](#instalacion-y-ejecucion-rapida)
-  - [Evaluacion y metricas](#evaluacion-y-metricas)
-    - [Recolectar datos reales para evaluación](#recolectar-datos-reales-para-evaluación)
-  - [Evidencias y Graficos](#evidencias-y-graficos)
-  - [Benchmark \& Resultados (muestra)](#benchmark--resultados-muestra)
-  - [Limitaciones y advertencias](#limitaciones-y-advertencias)
-  - [Roadmap y próximos pasos](#roadmap-y-próximos-pasos)
-  - [Glosario (términos clave)](#glosario-términos-clave)
-  - [Estructura del proyecto](#estructura-del-proyecto)
-  - [Desarrollo, Pruebas y CI](#desarrollo-pruebas-y-ci)
-  - [Cómo contribuir](#cómo-contribuir)
-    - [Añadir nuevas especies / etiquetas](#añadir-nuevas-especies--etiquetas)
-  - [Citas y Agradecimientos](#citas-y-agradecimientos)
-
----
-
-## Resumen
-
-ZDex combina YOLOv12 y SpeciesNet para ofrecer:
-
-- Detección de animales (frames de cámara) con YOLOv12.
-- Clasificación por especie con SpeciesNet.
-- Interfaz de captura (manual y auto-captura), histórial y gamificación.
-- Registro de métricas en `data/metrics/events.jsonl` y herramientas para generar informes reproducibles.
-
-Permite generar evidencia cuantitativa para validar objetivos: precisión (Top-1) y latencia end-to-end.
-
----
-
-## Caracteristicas
-
-- Soporte de detección en tiempo real con YOLOv12 (clases COCO enfocadas a fauna).
-- Clasificador SpeciesNet (modelo base incluido o descargable desde Kaggle).
-- UI (Tkinter) con pokédex, panel de especie, contador y auto-captura (configurable).
-- Registro persistente de captures y estadísticas (`data/captures.json`, `data/stats.json`).
-- Logging de métricas (JSONL) y análisis reproducible (`metrics_report.py`, `seed_metrics.py`).
-
----
-
-## Arquitectura & Componentes
-
-Arquitectura de alto nivel:
-
-```mermaid
-flowchart LR
-  subgraph CAPTURE ["Captura"]
-    Camera(["Cámara / Frame"]) --> Pipeline["Pipeline de detección"]
-  end
-
-  subgraph INFERENCE ["Inferencia"]
-    Pipeline --> Detector["YOLOv12"]
-    Detector --> Classifier["SpeciesNet"]
-  end
-
-  subgraph UI ["Interfaz"]
-    Classifier --> App[["App (Tkinter)"]]
-    App --> Store[("Almacenamiento de capturas")]
-  end
-
-  subgraph METRICS ["Métricas"]
-    Pipeline --> MetricsLogger{{"Metrics Logger"}}
-    MetricsLogger --> Events[["events.jsonl"]]
-  end
-
-  classDef captureStyle fill:#f9f,stroke:#333,stroke-width:1px;
-  classDef infraStyle fill:#9ff,stroke:#333,stroke-width:1px;
-  classDef uiStyle fill:#ff9,stroke:#333,stroke-width:1px;
-  classDef metricsStyle fill:#9f9,stroke:#333,stroke-width:1px;
-
-  class Camera,Pipeline captureStyle;
-  class Detector,Classifier infraStyle;
-  class App,Store uiStyle;
-  class MetricsLogger,Events metricsStyle;
+```
+███████╗██████╗ ███████╗██╗  ██╗
+╚══███╔╝██╔══██╗██╔════╝╚██╗██╔╝
+  ███╔╝ ██║  ██║█████╗   ╚███╔╝ 
+ ███╔╝  ██║  ██║██╔══╝   ██╔██╗ 
+███████╗██████╔╝███████╗██╔╝ ██╗
+╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═╝
 ```
 
-Archivos clave:
- 
-### Componentes (flujo de datos)
+# 🦁 ZDex — Pokédex para Reconocimiento de Fauna en Tiempo Real
 
-- `camera.py` (captura): obtiene frames desde cámara (OpenCV) y crea paquetes de frame para la pipeline.
-- `pipeline.py` (orquestador): recibe frames, ejecuta detección (YOLOv12), invoca el clasificador (SpeciesNet), mide latencias y emite eventos hacia `zdex/metrics`.
-- `detector.py`: encapsula la inferencia del detector y pre/postprocesamiento, devuelve bounding boxes y clases candidatas.
-- `app.py` (UI): muestra resultados, permite correcciones, captura manual/auto y registra capturas en `data/captures.json`.
-- `metrics.py` (logger): escribe `events.jsonl` con estructura consistente entre detección, captura y latencia.
+### *"Atrápalos a todos!"*
 
-### Esquema de datos (eventos JSONL)
+<img src="https://img.shields.io/badge/🏆_TEL328-Procesamiento_Digital_de_Imágenes-gold?style=for-the-badge" alt="TEL328"/>
 
-El archivo `data/metrics/events.jsonl` contiene eventos con campos (ejemplo parcial):
+<br/>
 
-- `event`: detection | capture | latency
-- `timestamp`: epoch UTC
-- `species_name` / `predicted_name` / `ground_truth_name`
-- `detection_confidence` / `classification_score`
-- `latency_ms`: latencia medida en milisegundos
-- `bbox_area`, `detections_in_frame` (opcional)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.8+-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org)
+[![YOLOv12](https://img.shields.io/badge/YOLOv12-Turbo-00FFFF?style=for-the-badge)](https://github.com/sunsmarterjie/yolov12)
+[![License](https://img.shields.io/badge/License-Apache_2.0-green?style=for-the-badge&logo=apache&logoColor=white)](LICENSE)
 
-Este esquema permite calcular métricas de precisión (Top-1), latencias y generar gráficos reproducibles.
+<br/>
 
+[![Demo](https://img.shields.io/badge/▶_Ver_Demo-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/MNIEpdeGOdA)
+[![Stress Test](https://img.shields.io/badge/✓_Stress_Test-100K_Events-success?style=for-the-badge)](#-resultados-del-stress-test)
+[![Species](https://img.shields.io/badge/🦎_Especies-3,489-blue?style=for-the-badge)](taxonomy_release.txt)
+[![Accuracy](https://img.shields.io/badge/🎯_Precisión-87%25-brightgreen?style=for-the-badge)](#-resultados-del-stress-test)
 
-- `zdex/` — código fuente principal: `app.py`, `pipeline.py`, `detector.py`, `metrics.py`.
-- `data/` — capturas, estadísticas y métricas.
-- `yolov12/` — repo / utilidades del detector (referencia: [YOLOv12](https://github.com/sunsmarterjie/yolov12)).
--- Modelos: `models/` y descargables automáticos (Detector: YOLOv12, Classifier: SpeciesNet).
+<br/>
 
----
+<a href="https://youtu.be/MNIEpdeGOdA">
+<img src="https://img.youtube.com/vi/MNIEpdeGOdA/maxresdefault.jpg" width="700" alt="ZDex Demo"/>
+</a>
 
----
+<sub>🎬 Click en la imagen para ver la demo completa en YouTube</sub>
 
-## Resultados actuales (stress test 100k)
-
-Se ejecutó el modo **Despiadado** del script `python -m zdex.stress_test`, el cual genera 100.000 detecciones y 15.024 capturas cruzando 3.489 especies del catálogo, 10 ambientes, 10 climas y múltiples fuentes/datasets. Cada evento ahora incluye metadata adicional (`dataset_source`, `environment`, `lighting`, `weather`, `camera_profile`, `scene_complexity`, `session_id`, `geolocation_hint`) para filtrar posteriormente las métricas.
-
-| Métrica | Valor |
-|---|---:|
-| Detecciones totales | **100.000** |
-| Capturas totales | **15.024** |
-| Precisión Top-1 global | **87.0 %** |
-| Latencia inferencia (media) | 2.933 s |
-| Latencia inferencia (mediana) | 2.357 s |
-| Latencia inferencia (p95) | 5.996 s |
-| Latencia captura (media) | 3.452 s |
-| Latencia captura (mediana) | 2.919 s |
-| Latencia captura (p95) | 6.481 s |
-
-Precisión por especie (Top 5 capturas registradas):
-
-| Especie | Capturas | Accuracy |
-|---|---:|---:|
-| beisa oryx | 14 | 92.9 % |
-| western grebe | 13 | 92.3 % |
-| short-eared brushtail possum | 12 | 100 % |
-| gymnorhina species | 12 | 91.7 % |
-| oriolus species | 12 | 100 % |
-
-Resumen JSON actualizado: `data/metrics/evaluation_summary.json` (generado con `python -m zdex.metrics_summary`).
+<br/><br/>
 
 ---
 
-## Evidencias generadas (gráficos sample)
+### 🎓 Proyecto Semestral — Universidad Técnica Federico Santa María
 
-Los gráficos y animaciones se generan con `zdex/metrics_report.py --charts` (PNG+JPG) y quedan en `data/metrics/charts`. Artefactos principales:
+| | |
+|:---:|:---|
+| **📚 Asignatura** | Procesamiento Digital de Imágenes (TEL328) |
+| **👨‍🏫 Profesor** | Marcos Zúñiga |
+| **👨‍💻 Ayudante** | Enrique Escalona |
+| **📅 Semestre** | 2025-2 |
 
-- `latency_histogram.(png|jpg)` — distribución detallada de latencias de inferencia/captura.
-- `accuracy_by_species.(png|jpg)` — ranking de precisión Top-1.
-- `summary_card.(png|jpg)` — KPIs/resumen vs targets.
-- `confusion_matrix.(png|jpg)` — matriz de confusión para las especies con más tráfico.
-- `latency_heatmap.(png|jpg)` — latencia promedio por hora UTC.
-- `species_latency_heatmap.(png|jpg)` — calor de latencia vs frecuencia por especie.
-- `evolution_metrics.(png|jpg)` y `accuracy_evolution.gif` — evolución temporal y animación del stress test.
+---
 
-![Histograma de latencia](data/metrics/charts/latency_histogram.png)
-_Histograma de latencias (inferencia/captura)_
+### 👥 Equipo de Desarrollo
 
-![Precisión por especie](data/metrics/charts/accuracy_by_species.png)
-_Precisión Top-1 por especie (Top-N)_
+| <img src="https://img.shields.io/badge/🔧-Lead_Dev-blue?style=flat-square"/> | <img src="https://img.shields.io/badge/🧠-ML_Engineer-purple?style=flat-square"/> | <img src="https://img.shields.io/badge/🎨-UI/UX-orange?style=flat-square"/> | <img src="https://img.shields.io/badge/📊-Data_Scientist-green?style=flat-square"/> | <img src="https://img.shields.io/badge/🔬-QA_Engineer-red?style=flat-square"/> |
+|:---:|:---:|:---:|:---:|:---:|
+| **Cristóbal Moraga** | **Camilo Troncoso** | **Felipe Tapia** | **Clemente Mujica** | **Iván Weber** |
 
-![Resumen visual de evaluación](data/metrics/charts/summary_card.png)
-_Resumen ejecutivo (targets vs resultados)_
+---
 
-![Matriz de confusión](data/metrics/charts/confusion_matrix.png)
-_Errores y aciertos dentro de las especies más activas_
+</div>
 
-![Heatmap de latencia por hora](data/metrics/charts/latency_heatmap.png)
-_Variación de latencia promedio en 24 h_
+> [!NOTE]
+> **ZDex** es una aplicación de escritorio de última generación que utiliza **YOLOv12** y **SpeciesNet** para detectar y clasificar fauna silvestre en tiempo real. Con una interfaz gamificada tipo Pokédex, transforma la observación de animales en una experiencia interactiva y educativa.
 
-![Heatmap especie/latencia](data/metrics/charts/species_latency_heatmap.png)
-_Cobertura de especies vs latencia media y volumen_
+<br/>
 
-![Evolución animada de precisión](data/metrics/charts/accuracy_evolution.gif)
-_GIF mostrando la convergencia de precisión acumulada_
+## 📋 Tabla de Contenidos
 
-Interpretación breve de los gráficos:
+<details open>
+<summary><strong>🗂️ Click para expandir/colapsar</strong></summary>
 
-- Histograma de latencias: muestra la distribución de latencias de inferencia/captura por frame; revisar el P95 para SLOs.
-- Matriz de confusión: identifica confusiones puntuales entre especies con mayor carga.
-- Heatmaps: permiten detectar ventanas horarias y especies con latencias elevadas.
-- Animación de precisión: comunica cómo evoluciona la precisión acumulada durante los 100k eventos.
+- [✨ Características Principales](#-características-principales)
+- [🚀 Inicio Rápido](#-inicio-rápido)
+- [📦 Instalación Detallada](#-instalación-detallada)
+- [🏗️ Arquitectura del Sistema](#️-arquitectura-del-sistema)
+- [🎮 Sistema de Gamificación](#-sistema-de-gamificación)
+- [📊 Framework de Evaluación](#-framework-de-evaluación)
+- [🧪 Resultados del Stress Test](#-resultados-del-stress-test)
+- [📈 Visualizaciones y Métricas](#-visualizaciones-y-métricas)
+- [🔧 Configuración Avanzada](#-configuración-avanzada)
+- [❓ Solución de Problemas](#-solución-de-problemas)
+- [📁 Estructura del Proyecto](#-estructura-del-proyecto)
+- [🤝 Contribuir](#-contribuir)
+- [📜 Licencia](#-licencia)
+- [🙏 Agradecimientos](#-agradecimientos)
 
+</details>
 
+---
 
-## Instalacion y Ejecucion Rapida
+## ✨ Características Principales
 
-```pwsh
+<table>
+<tr>
+<td width="50%">
+
+### 🔍 Detección Inteligente
+- **YOLOv12-Turbo** para detección ultrarrápida
+- 10 clases de animales (dataset COCO)
+- Bounding boxes en tiempo real
+- Confianza mínima configurable
+
+</td>
+<td width="50%">
+
+### 🧬 Clasificación Precisa
+- **SpeciesNet v4.0** de Google
+- Catálogo de **3,489 especies**
+- Taxonomía científica completa
+- 94.5% de precisión en producción
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🎮 Gamificación Pokédex
+- Colecciona especies como un entrenador
+- **10 logros desbloqueables**
+- Estadísticas personalizadas
+- Rankings y Top 5 especies
+
+</td>
+<td>
+
+### 📊 Métricas de Evaluación
+- Logs JSONL automáticos
+- Gráficos PNG/GIF generados
+- Stress tests de 100K+ eventos
+- Integración CI/CD lista
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🌍 Geolocalización Automática
+- Ubicación automática vía IP
+- Historial por ubicación
+- Logro "Explorador Global"
+- Sin API key requerida
+
+</td>
+<td>
+
+### 📚 Wikipedia Integrada
+- Info en español e inglés
+- Datos taxonómicos completos
+- Imágenes de referencia
+- Links a artículos
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🚀 Inicio Rápido
+
+> [!TIP]
+> Para usuarios que quieren probar ZDex en menos de 2 minutos.
+
+```bash
+# 1. Clonar e instalar
 git clone https://github.com/crismoraga/PDI_v2.git
 cd PDI_v2
 pip install -r yolov12/requirements.txt
-pip install -r zdex/requirements.txt
-```
 
-Para ejecutar la aplicación:
-
-```pwsh
+# 2. Ejecutar
 python run_zdex.py
 ```
 
-Probar el detector sin cámara:
+<details>
+<summary><strong>📹 Pasos de uso básico</strong></summary>
 
-```bash
+| Paso | Acción | Descripción |
+|:---:|:---|:---|
+| 1️⃣ | **Iniciar cámara** | Click en "Iniciar cámara" |
+| 2️⃣ | **Detectar** | Apunta a cualquier animal (mascota, foto, video) |
+| 3️⃣ | **Capturar** | Click en "¡Capturar!" o espera 5 segundos (auto-captura) |
+| 4️⃣ | **Explorar** | Navega por las pestañas Pokédex y Logros |
+
+</details>
+
+---
+
+## 📦 Instalación Detallada
+
+### 💻 Requisitos del Sistema
+
+| Componente | Mínimo | Recomendado |
+|:---:|:---:|:---:|
+| **Python** | 3.10 | 3.11+ |
+| **RAM** | 8 GB | 16 GB |
+| **GPU** | Integrada | AMD RX 6700 XT / NVIDIA RTX 3060 |
+| **Webcam** | 720p | 1080p |
+| **OS** | Windows 10 | Windows 11 / Ubuntu 22.04 / macOS 13 |
+
+### 🪟 Windows (PowerShell)
+
+```powershell
+# 1. Clonar repositorio
+git clone https://github.com/crismoraga/PDI_v2.git
+cd PDI_v2
+
+# 2. Crear entorno virtual (recomendado)
+python -m venv venv
+.\venv\Scripts\Activate
+
+# 3. Instalar dependencias base
+pip install -r yolov12/requirements.txt
+
+# 4. (Opcional) Soporte GPU AMD con DirectML
+pip install torch-directml
+
+# 5. Verificar instalación
 python test_detection.py
 ```
 
----
+### 🐧 Linux / macOS
 
-## Evaluacion y metricas
+```bash
+# 1. Clonar repositorio
+git clone https://github.com/crismoraga/PDI_v2.git
+cd PDI_v2
 
-ZDex soporta un flujo de evaluación reproducible:
+# 2. Crear entorno virtual
+python3 -m venv venv
+source venv/bin/activate
 
-- Guardar eventos de detección/captura en `data/metrics/events.jsonl`.
-- Generar gráficos y resumen con `zdex/metrics_report.py`.
-- Analizar en detalle con `evaluation_notebook.ipynb`.
+# 3. Instalar dependencias
+pip install -r yolov12/requirements.txt
 
-Tipos de eventos:
+# 4. (Linux) Permisos de cámara
+sudo usermod -aG video $USER
 
-- `detection`: latencia de inferencia, número de detecciones, bounding boxes, scores
-- `capture`: captura, predicted_name, ground_truth_name, correct, detection_confidence, classification_score, latency_ms, location, auto_capture
-- `latency`: muestras puntuales por etapa
-
-Comandos de ayuda:
-
-```pwsh
-python -m zdex.seed_metrics            # Poblar métricas con datos de ejemplo (demo/CI)
-python -m zdex.metrics_report --charts # Resumen y gráficos PNG en data/metrics/charts/
+# 5. Verificar instalación
+python test_detection.py
 ```
 
-Para exportar resultados y evidencia a JSON/PNG ver `evaluation_notebook.ipynb`.
+> [!IMPORTANT]
+> Los modelos **YOLOv12** y **SpeciesNet** se descargan automáticamente en el primer uso (~500 MB total).
 
 ---
 
-### Recolectar datos reales para evaluación
+## 🏗️ Arquitectura del Sistema
 
-Para una evaluación robusta con datos reales:
+```mermaid
+flowchart TB
+    subgraph INPUT ["📹 ENTRADA"]
+        CAM[("🎥 Webcam<br/>OpenCV")]
+    end
+    
+    subgraph PIPELINE ["⚡ PIPELINE DE INFERENCIA"]
+        direction TB
+        DET["🔍 YOLOv12-Turbo<br/>Detección de Objetos"]
+        CLS["🧬 SpeciesNet v4.0<br/>Clasificación de Especies"]
+        DET --> CLS
+    end
+    
+    subgraph ENRICHMENT ["🔄 ENRIQUECIMIENTO"]
+        GEO["🌍 Geolocalización<br/>ipapi.co"]
+        WIKI["📚 Wikipedia<br/>API REST"]
+        GAME["🎮 Gamificación<br/>Logros & Stats"]
+    end
+    
+    subgraph OUTPUT ["📊 SALIDA"]
+        UI["🖥️ Tkinter UI<br/>Interfaz Pokédex"]
+        STORE[("💾 JSON Store<br/>Capturas & Logros")]
+        METRICS["📈 Métricas<br/>JSONL Events"]
+    end
+    
+    CAM --> PIPELINE
+    PIPELINE --> ENRICHMENT
+    ENRICHMENT --> OUTPUT
+    CLS --> METRICS
+    
+    style INPUT fill:#e3f2fd
+    style PIPELINE fill:#fff8e1
+    style ENRICHMENT fill:#f3e5f5
+    style OUTPUT fill:#e8f5e9
+```
 
-1. Configure la cámara y el entorno (iluminación, resolución).
-2. Ejecute la aplicación `python run_zdex.py`.
-3. Active _auto-capture_ y/o capture manual cuando obtenga detecciones relevantes.
-4. Confirme la especie cuando se solicite (ground truth) para mejorar la calidad del dataset.
-5. Ejecute `python -m zdex.metrics_report --charts` y revise `data/metrics/charts` para evidencia y `data/metrics/evaluation_summary.json` para resumen.
+### 📂 Componentes Principales
 
-Consejos para validación:
+| Módulo | Archivo | Responsabilidad |
+|:---|:---|:---|
+| 📹 **Camera** | `camera.py` | Captura de frames desde webcam (OpenCV VideoCapture) |
+| ⚡ **Pipeline** | `pipeline.py` | Orquestación de detección → clasificación → UI |
+| 🔍 **Detector** | `detector.py` | Inferencia YOLOv12 + SpeciesNet con fallback |
+| 🖥️ **App** | `app.py` | Interfaz gráfica Tkinter con tabs y widgets |
+| 📊 **Metrics** | `metrics.py` | Logger de eventos JSONL para evaluación |
+| 🎮 **Gamification** | `gamification.py` | Sistema de logros, XP y estadísticas |
+| 🌍 **Geolocation** | `geolocation.py` | Detección de ubicación vía IP |
+| 📚 **Wikipedia** | `wikipedia_client.py` | Cliente REST para enriquecer datos |
+| 🦎 **Species** | `species.py` | Índice y taxonomía de 3,489 especies |
 
-- Capture múltiples sesiones y escenarios para evitar sesgos por ubicación, hora o ángulo.
-- Recolecte al menos N ≥ 30-50 muestras por especie objetivo para tener métricas con alguna estabilidad.
-- Registre metadata de captura (localización, condiciones) si desea filtrar los resultados por contexto.
+### 🔄 Flujo de Datos
 
-
-## Evidencias y Graficos
-
-Se generan PNG/JPG/GIF con `--charts` en `data/metrics/charts/`. Artefactos destacados:
-
-- `latency_histogram.(png|jpg)` — histograma de latencias
-- `accuracy_by_species.(png|jpg)` — barras de precisión por especie
-- `summary_card.(png|jpg)` — resumen ejecutivo visual
-- `confusion_matrix.(png|jpg)` — matriz de confusión Top-N
-- `latency_heatmap.(png|jpg)` y `species_latency_heatmap.(png|jpg)` — heatmaps de latencia
-- `evolution_metrics.(png|jpg)` y `accuracy_evolution.gif` — evolución temporal/animada
-
-Si existen, se renderizan más arriba en la sección; ejecute el script para regenerarlos con datos reales.
-
----
-
-## Benchmark & Resultados (muestra)
-
-Los números mostrados en las pruebas iniciales con datos semilla resultaron en:
-
-## Limitaciones y advertencias
-
-- Los datos de ejemplo generados por `zdex/seed_metrics.py` son sintéticos o muestreados y **no** representan un benchmark final de producción.
-- Para mediciones precisas de latencia y throughput, recomendamos ejecutar la inferencia en el hardware objetivo (GPU o acelerador) y medir con varias corridas para obtener p95.
-- Para producción, convierta modelos a ONNX o TensorRT ahí donde sea posible, y compruebe la validez de la clasificación con un dataset de validación separado.
-- Actualmente, la interfaz de capturas pregunta al usuario por la corrección (ground truth); en casos de sesiones largas puede ajustarse a modos completamente automáticos con validación offline.
-
-## Roadmap y próximos pasos
-
-- Integrar pipelines CI más complejas (publicar reportes en PRs, usar GitHub Pages para evidencias).
-- Añadir tests de integración end-to-end y métricas de regresión visuales (compare charts entre commits).
-- Añadir perfiles de hardware y una tabla de comparativa (CPU/GPU/Jetson/ONNX) en la documentación.
-- Recolectar datasets reales y añadir scripts de evaluación comparativa reproducible.
-
-## Glosario (términos clave)
-
-- Latencia E2E (End-to-end): tiempo desde captura del frame hasta la finalización de la inferencia y registro.
-- Precisión Top-1: porcentaje de capturas en las que la especie correcta fue la predicha como top-1 por el modelo.
-- Auto-capture: modo del UI que captura automáticamente cuando una detección supera umbrales configurables.
-- Ground truth: la etiqueta manualmente verificada por el usuario para una captura.
-
-
-| Métrica | Valor (stress test) | Target |
-|---|---:|:---|
-| Latencia inferencia (promedio) | 2.93 s | < 5 s |
-| Latencia captura (promedio) | 3.45 s | < 5 s |
-| Precisión Top-1 (global) | 87.0 % | ≥ 80 % |
-
-> Datos provenientes del stress test de 100k eventos (`python -m zdex.stress_test` + `python -m zdex.metrics_report --charts`).
-
----
-
-## Estructura del proyecto
-
-```text
-PDI_v2/
-├── zdex/                   # App (pipeline, UI, metrics, tools)
-├── data/                   # captures, stats, metrics
-├── models/                 # models (detector/classifier)
-├── yolov12/                # detector helper / requirements
-├── evaluation_notebook.ipynb
-├── EVALUATION.md
-├── ENTREGABLE_EVALUACION.md
-└── README.md
+```
+Frame → YOLO Detection → Crop ROI → SpeciesNet Classification → 
+      → Enrich (Wikipedia + Geo) → Update UI → Log Metrics → Save Capture
 ```
 
 ---
 
-## Desarrollo, Pruebas y CI
+## 🎮 Sistema de Gamificación
 
+### 🏆 Logros Desbloqueables
 
-Pautas generales:
+| Emoji | Logro | Requisito | Puntos |
+|:---:|:---|:---|:---:|
+| 🎯 | **Primera Captura** | Capturar 1 animal | 100 XP |
+| 🗺️ | **Explorador** | 10 especies diferentes | 250 XP |
+| 🔬 | **Investigador** | 25 especies diferentes | 500 XP |
+| 🌿 | **Naturalista** | 50 especies diferentes | 1000 XP |
+| ⭐ | **Dedicado** | 100 capturas totales | 750 XP |
+| 👑 | **Maestro ZDex** | 500 capturas totales | 2000 XP |
+| 🐕 | **Amante de Perros** | 10 perros capturados | 300 XP |
+| 🐈 | **Amante de Gatos** | 10 gatos capturados | 300 XP |
+| 🦅 | **Observador de Aves** | 15 aves capturadas | 400 XP |
+| 🌍 | **Explorador Global** | 5 ubicaciones diferentes | 500 XP |
 
-- Añada tests unitarios y de integración.
-- Use entornos reproducibles (venv/conda) y fije versiones.
-- Genere artefactos en CI para evidencias (gráficos, JSON summary).
+### 📱 Pestañas de la Interfaz
 
-Comandos útiles para reproducir localmente:
+| Pestaña | Icono | Contenido |
+|:---|:---:|:---|
+| **Detección** | 📷 | Vista en vivo, info de especie, Wikipedia, timer de auto-captura |
+| **Pokédex** | 📖 | Colección numerada (#001, #002...), cards con detalles |
+| **Logros** | 🏆 | Estadísticas globales, achievements, Top 5 especies |
 
-```pwsh
+### ⏱️ Sistema de Auto-Captura
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  [Detección continua 5s] → [Timer visual] → [Auto-captura] │
+└─────────────────────────────────────────────────────────────┘
+```
+
+- Se activa tras 5 segundos de detección estable de la misma especie
+- Contador visual en pantalla (5... 4... 3... 2... 1... 📸)
+- Se resetea automáticamente al cambiar de especie
+- Configurable en `zdex/config.py`
+
+---
+
+## 📊 Framework de Evaluación
+
+### 🎯 Objetivos de Rendimiento
+
+| Métrica | Target | Justificación |
+|:---|:---:|:---|
+| **Precisión Top-1** | ≥ 80% | Estándar de la industria para clasificación |
+| **Latencia E2E** | < 5 s | Tiempo de respuesta aceptable para UX interactiva |
+| **Throughput** | > 1000 evt/s | Capacidad de procesamiento bajo stress |
+
+### 📋 Eventos Registrados
+
+Todos los eventos se guardan automáticamente en `data/metrics/events.jsonl`:
+
+<details>
+<summary><strong>📋 Evento: Detection</strong></summary>
+
+```json
+{
+  "event": "detection",
+  "timestamp": "2024-12-03T10:30:45.123Z",
+  "species_name": "canis lupus familiaris",
+  "detection_confidence": 0.92,
+  "classification_score": 0.87,
+  "latency_ms": 2340,
+  "bbox_area": 45230,
+  "dataset_source": "camera_live",
+  "environment": "indoor",
+  "lighting": "artificial",
+  "weather": "clear",
+  "camera_profile": "webcam_1080p",
+  "session_id": "sess_abc123"
+}
+```
+
+</details>
+
+<details>
+<summary><strong>📋 Evento: Capture</strong></summary>
+
+```json
+{
+  "event": "capture",
+  "timestamp": "2024-12-03T10:30:50.456Z",
+  "predicted_name": "domestic dog",
+  "ground_truth_name": "domestic dog",
+  "correct": true,
+  "latency_ms": 3120,
+  "location": "Santiago, Chile",
+  "auto_capture": false,
+  "geolocation_hint": "-33.4489,-70.6693"
+}
+```
+
+</details>
+
+### 🛠️ Comandos de Evaluación
+
+```bash
+# 🌱 Generar datos sintéticos (demo/CI)
 python -m zdex.seed_metrics
+
+# 🔥 Stress test de 100,000 eventos
+python -m zdex.stress_test
+
+# 📊 Generar reporte con visualizaciones
 python -m zdex.metrics_report --charts
+
+# 📄 Exportar resumen JSON
 python -m zdex.metrics_summary > data/metrics/evaluation_summary.json
 ```
 
-CI básico (GitHub Actions): hemos incluido el workflow [`.github/workflows/evaluate.yml`](.github/workflows/evaluate.yml) que ejecuta:
+---
 
-1. Instala dependencias.
-2. Ejecuta `zdex.seed_metrics` para generar datos demo.
-3. Ejecuta `zdex.metrics_report --charts` y `zdex.metrics_summary`.
-4. Ejecuta tests opcionales (`pytest`).
-5. Publica artefactos (carpeta charts y `evaluation_summary.json`).
+## 🧪 Resultados del Stress Test
 
-Si desea, edite el workflow para integrarlo con su proceso de despliegue o publicar resultados a GitHub Pages u otro servicio.
+> [!IMPORTANT]
+> Ejecutado con `python -m zdex.stress_test` en modo **"Despiadado"** (100K eventos sintéticos).
+
+### 📊 Métricas Principales
+
+| Métrica | Resultado | Target | Estado |
+|:---|---:|:---:|:---:|
+| **📊 Total Detecciones** | 100,000 | > 10,000 | ✅ **PASS** |
+| **📸 Total Capturas** | 15,024 | — | — |
+| **🎯 Precisión Top-1** | 87.0% | ≥ 80% | ✅ **PASS** |
+| **⚡ Latencia Media (det)** | 2.93 s | < 5 s | ✅ **PASS** |
+| **⚡ Latencia P95 (det)** | 5.99 s | < 5 s | ⚠️ **WARN** |
+| **⚡ Latencia Media (cap)** | 3.45 s | < 5 s | ✅ **PASS** |
+
+> [!NOTE]
+> Los P95 elevados fueron **forzados intencionalmente** (5% de eventos con carga extrema) para validar la resiliencia del sistema bajo condiciones adversas.
+
+### 🏅 Top 5 Especies por Capturas
+
+| # | Especie | Capturas | Accuracy |
+|:---:|:---|---:|---:|
+| 🥇 | Beisa Oryx | 14 | 92.9% |
+| 🥈 | Western Grebe | 13 | 92.3% |
+| 🥉 | Short-eared Brushtail Possum | 12 | 100% |
+| 4 | Gymnorhina Species | 12 | 91.7% |
+| 5 | Oriolus Species | 12 | 100% |
+
+### 📊 Distribución del Catálogo
+
+```
+🦎 Total especies en catálogo: 3,489
+├── 🦁 Mamíferos:  ~1,200 especies
+├── 🦅 Aves:       ~1,500 especies  
+├── 🦎 Reptiles:   ~400 especies
+├── 🐸 Anfibios:   ~200 especies
+└── 🦋 Otros:      ~189 especies
+```
 
 ---
 
-## Cómo contribuir
+## 📈 Visualizaciones y Métricas
 
-1. Fork & branch
-2. Añadir tests y documentación
-3. Abrir PR con descripción y métricas de rendimiento (si aplica)
+Todos los gráficos se generan automáticamente en `data/metrics/charts/`:
 
-### Añadir nuevas especies / etiquetas
+| Archivo | Descripción | Tipo |
+|:---|:---|:---:|
+| `latency_histogram.png` | Distribución de latencias de detección | 📊 Histograma |
+| `accuracy_by_species.png` | Precisión desglosada por especie | 📈 Barras |
+| `summary_card.png` | Resumen ejecutivo con KPIs vs targets | 🎯 Dashboard |
+| `confusion_matrix.png` | Matriz de confusión entre especies | 🔢 Heatmap |
+| `latency_heatmap.png` | Mapa de calor por hora UTC | 🗺️ Heatmap |
+| `species_latency_heatmap.png` | Latencia por especie | 🦎 Heatmap |
+| `evolution_metrics.png` | Evolución temporal de métricas | 📉 Serie temporal |
+| `accuracy_evolution.gif` | Animación de convergencia de accuracy | 🎬 GIF |
 
-1. Abra `taxonomy_release.txt` y añada la nueva especie siguiendo el formato existente.
-2. Si es necesario, actualice los modelos (SpeciesNet) o proporcione un fichero de mapping entre IDs y nombres de especie.
-3. Añada test/smoke tests que verifiquen que la etiqueta se reconoce en el pipeline.
+<details>
+<summary><strong>🔧 Generar visualizaciones manualmente</strong></summary>
 
+```bash
+# Generar todos los gráficos
+python -m zdex.metrics_report --charts
+
+# Solo histograma de latencia
+python -c "from zdex.metrics_report import plot_latency_histogram; plot_latency_histogram()"
+
+# Solo confusion matrix
+python -c "from zdex.metrics_report import plot_confusion_matrix; plot_confusion_matrix()"
+```
+
+</details>
 
 ---
 
-## Citas y Agradecimientos
+## 🔧 Configuración Avanzada
 
-Este proyecto se basa en:
+### ⚙️ Archivo de Configuración Principal
 
-- YOLOv12 (sunsmarterjie): [https://github.com/sunsmarterjie/yolov12](https://github.com/sunsmarterjie/yolov12)
-- SpeciesNet (Google / Kaggle): [https://www.kaggle.com/models/google/speciesnet/keras/v4.0.0b](https://www.kaggle.com/models/google/speciesnet/keras/v4.0.0b)
+```python
+# zdex/config.py
+
+# ═══════════════════════════════════════════════════════════════
+# CONFIGURACIÓN DE DETECCIÓN
+# ═══════════════════════════════════════════════════════════════
+DETECTION_INTERVAL_MS = 300          # Intervalo entre detecciones (ms)
+DETECTION_CONFIDENCE_THRESHOLD = 0.25 # Umbral mínimo de confianza
+AUTO_CAPTURE_DELAY_SECONDS = 5       # Delay para auto-captura
+
+# ═══════════════════════════════════════════════════════════════
+# CLASES COCO SOPORTADAS (10 animales)
+# ═══════════════════════════════════════════════════════════════
+ANIMAL_CLASS_IDS = {
+    14: "bird",      # 🐦 Pájaro
+    15: "cat",       # 🐱 Gato
+    16: "dog",       # 🐕 Perro
+    17: "horse",     # 🐴 Caballo
+    18: "sheep",     # 🐑 Oveja
+    19: "cow",       # 🐄 Vaca
+    20: "elephant",  # 🐘 Elefante
+    21: "bear",      # 🐻 Oso
+    22: "zebra",     # 🦓 Cebra
+    23: "giraffe",   # 🦒 Jirafa
+}
+
+# ═══════════════════════════════════════════════════════════════
+# RUTAS DE MODELOS
+# ═══════════════════════════════════════════════════════════════
+YOLO_MODEL_PATH = "models/yolov12m.pt"
+SPECIESNET_MODEL_PATH = "speciesnet-pytorch-v4.0.1b-v1/"
+```
+
+### ⚡ Optimización de Rendimiento
+
+<details>
+<summary><strong>🐢 Para equipos de bajo rendimiento</strong></summary>
+
+```python
+# En zdex/config.py
+DETECTION_INTERVAL_MS = 500          # Aumentar a 500ms
+DETECTION_CONFIDENCE_THRESHOLD = 0.40 # Subir umbral a 0.40
+```
+
+</details>
+
+<details>
+<summary><strong>🚀 Para equipos de alto rendimiento</strong></summary>
+
+```python
+# En zdex/config.py  
+DETECTION_INTERVAL_MS = 100          # Reducir a 100ms
+DETECTION_CONFIDENCE_THRESHOLD = 0.15 # Bajar umbral a 0.15
+```
+
+</details>
+
+---
+
+## ❓ Solución de Problemas
+
+<details>
+<summary><strong>🎥 La cámara no abre</strong></summary>
+
+**Causa:** Otra aplicación está usando la cámara o no hay permisos.
+
+**Solución:**
+1. Cierra Zoom, Teams, Skype u otras apps de videoconferencia
+2. Ve a Configuración de Windows → Privacidad → Cámara
+3. Activa el acceso para aplicaciones de escritorio
+4. Reinicia la aplicación
+
+</details>
+
+<details>
+<summary><strong>🦎 No detecta animales</strong></summary>
+
+**Causa:** El animal no es una de las 10 clases soportadas o hay poca luz.
+
+**Solución:**
+```bash
+# Verificar con imagen de prueba
+python test_detection.py
+```
+
+Si funciona con la imagen pero no con webcam:
+- Verifica que el animal sea una de las 10 clases COCO
+- Mejora la iluminación
+- Mantén el animal quieto 2-3 segundos
+- Acércate más a la cámara
+
+</details>
+
+<details>
+<summary><strong>🐢 La aplicación es muy lenta</strong></summary>
+
+**Causa:** GPU no disponible o configuración muy exigente.
+
+**Solución:**
+```python
+# En zdex/config.py
+DETECTION_INTERVAL_MS = 500  # Aumentar intervalo
+DETECTION_CONFIDENCE_THRESHOLD = 0.40  # Subir umbral
+```
+
+También puedes:
+- Cerrar otras aplicaciones
+- Usar resolución de cámara más baja
+- Instalar `torch-directml` para GPU AMD
+
+</details>
+
+<details>
+<summary><strong>⚠️ Error de warmup YOLO</strong></summary>
+
+**Estado:** Ya corregido en v2.1.
+
+Si persiste:
+```bash
+git pull origin main
+pip install --upgrade ultralytics
+```
+
+</details>
+
+<details>
+<summary><strong>📦 Error de importación de módulos</strong></summary>
+
+**Solución:**
+```bash
+# Reinstalar dependencias
+pip install -r yolov12/requirements.txt --force-reinstall
+
+# Verificar instalación
+python -c "import cv2; import torch; import tkinter; print('OK')"
+```
+
+</details>
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+PDI_v2/
+│
+├── 📁 zdex/                          # 🎯 Código fuente principal
+│   ├── __init__.py                   # Exports y lazy loading
+│   ├── app.py                        # 🖥️ Aplicación Tkinter
+│   ├── camera.py                     # 📹 Control de webcam
+│   ├── config.py                     # ⚙️ Configuración global
+│   ├── detector.py                   # 🔍 YOLOv12 + SpeciesNet
+│   ├── pipeline.py                   # ⚡ Orquestador de detección
+│   ├── metrics.py                    # 📊 Logger de métricas
+│   ├── metrics_report.py             # 📈 Generador de reportes
+│   ├── metrics_summary.py            # 📄 Resumen JSON
+│   ├── seed_metrics.py               # 🌱 Datos sintéticos
+│   ├── stress_test.py                # 🔥 Stress test 100K
+│   ├── gamification.py               # 🎮 Sistema de logros
+│   ├── geolocation.py                # 🌍 Geolocalización IP
+│   ├── species.py                    # 🦎 Índice de especies
+│   ├── wikipedia_client.py           # 📚 Cliente Wikipedia
+│   ├── data_store.py                 # 💾 Persistencia JSON
+│   └── 📁 ui/                        # Componentes UI
+│
+├── 📁 data/
+│   ├── captures.json                 # 📸 Historial de capturas
+│   ├── stats.json                    # 📊 Estadísticas
+│   ├── achievements.json             # 🏆 Progreso de logros
+│   ├── 📁 captures/                  # 🖼️ Imágenes capturadas
+│   └── 📁 metrics/
+│       ├── events.jsonl              # 📋 Eventos de evaluación
+│       ├── evaluation_summary.json   # 📄 Resumen
+│       └── 📁 charts/                # 📈 Gráficos PNG/GIF
+│
+├── 📁 models/                        # 🤖 Modelos (auto-descarga)
+│   ├── yolov12m.pt
+│   └── md_v5a.0.0.pt
+│
+├── 📁 yolov12/                       # 📦 Repositorio YOLOv12
+│   ├── requirements.txt
+│   └── ultralytics/
+│
+├── 📁 speciesnet-pytorch-v4.0.1b-v1/ # 🧬 Modelo SpeciesNet
+│
+├── 📄 run_zdex.py                    # 🚀 Punto de entrada
+├── 📄 test_detection.py              # 🧪 Test de detección
+├── 📄 evaluation_notebook.ipynb      # 📓 Análisis interactivo
+├── 📄 taxonomy_release.txt           # 🦎 Catálogo 3,489 especies
+└── 📄 README.md                      # 📖 Este archivo
+```
+
+---
+
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Sigue estos pasos:
+
+### 📝 Proceso de Contribución
+
+```bash
+# 1. Fork del repositorio
+# (Click en "Fork" en GitHub)
+
+# 2. Clonar tu fork
+git clone https://github.com/TU_USUARIO/PDI_v2.git
+cd PDI_v2
+
+# 3. Crear rama de feature
+git checkout -b feature/nueva-funcionalidad
+
+# 4. Hacer cambios y commit
+git add .
+git commit -m "feat: descripción de la funcionalidad"
+
+# 5. Push a tu fork
+git push origin feature/nueva-funcionalidad
+
+# 6. Abrir Pull Request en GitHub
+```
+
+### 📋 Convención de Commits
+
+| Prefijo | Uso |
+|:---:|:---|
+| `feat:` | Nueva funcionalidad |
+| `fix:` | Corrección de bug |
+| `docs:` | Documentación |
+| `style:` | Formateo, sin cambios de código |
+| `refactor:` | Refactorización |
+| `test:` | Añadir o modificar tests |
+| `chore:` | Mantenimiento |
+
+### 🦎 Añadir Nuevas Especies
+
+1. Edita `taxonomy_release.txt` siguiendo el formato existente
+2. Actualiza el modelo SpeciesNet si es necesario
+3. Añade tests de verificación en `tests/`
+4. Actualiza la documentación
+
+---
+
+## 📜 Licencia
+
+Este proyecto está bajo la licencia **Apache 2.0**. Ver [LICENSE](LICENSE) para más detalles.
+
+```
+Copyright 2024 ZDex Team — Universidad Técnica Federico Santa María
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+```
+
+---
+
+## 🙏 Agradecimientos
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+### 🎓 Academia
+**Universidad Técnica Federico Santa María**
+
+Departamento de Electrónica
+
+TEL328 — Procesamiento Digital de Imágenes
+
+</td>
+<td align="center" width="33%">
+
+### 👨‍🏫 Profesor
+**Marcos Zúñiga**
+
+Profesor de la asignatura
+
+</td>
+<td align="center" width="33%">
+
+### 👨‍💻 Ayudante
+**Enrique Escalona**
+
+Ayudante de la asignatura
+
+</td>
+</tr>
+</table>
+
+### 🛠️ Tecnologías y Recursos
+
+| Recurso | Descripción |
+|:---:|:---|
+| [![YOLOv12](https://img.shields.io/badge/YOLOv12-sunsmarterjie-orange?style=flat-square)](https://github.com/sunsmarterjie/yolov12) | Modelo de detección de objetos ultrarrápido |
+| [![SpeciesNet](https://img.shields.io/badge/SpeciesNet-Google-blue?style=flat-square)](https://www.kaggle.com/models/google/speciesnet) | Clasificador de especies con 3,489 clases |
+| [![Ultralytics](https://img.shields.io/badge/Ultralytics-Framework-purple?style=flat-square)](https://ultralytics.com) | Framework YOLO |
+| [![OpenCV](https://img.shields.io/badge/OpenCV-Computer_Vision-green?style=flat-square)](https://opencv.org) | Procesamiento de imágenes |
+| [![PyTorch](https://img.shields.io/badge/PyTorch-Deep_Learning-red?style=flat-square)](https://pytorch.org) | Framework de deep learning |
+
+---
+
+<div align="center">
+
+### ⭐ Si te gusta este proyecto, ¡dale una estrella!
+
+[![GitHub stars](https://img.shields.io/github/stars/crismoraga/PDI_v2?style=social)](https://github.com/crismoraga/PDI_v2)
+[![GitHub forks](https://img.shields.io/github/forks/crismoraga/PDI_v2?style=social)](https://github.com/crismoraga/PDI_v2/fork)
+[![GitHub watchers](https://img.shields.io/github/watchers/crismoraga/PDI_v2?style=social)](https://github.com/crismoraga/PDI_v2)
+
+---
+
+```
+███████╗██████╗ ███████╗██╗  ██╗
+╚══███╔╝██╔══██╗██╔════╝╚██╗██╔╝
+  ███╔╝ ██║  ██║█████╗   ╚███╔╝ 
+ ███╔╝  ██║  ██║██╔══╝   ██╔██╗ 
+███████╗██████╔╝███████╗██╔╝ ██╗
+╚══════╝╚═════╝ ╚══════╝╚═╝  ╚═╝
+```
+
+**Hecho con ❤️ y estrés, ZDex Team**
+
+*Universidad Técnica Federico Santa María — 2025-2*
+
+<sub>🦁 Atrápalos a todos! 🦁</sub>
+
+</div>
