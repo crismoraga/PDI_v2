@@ -1,0 +1,106 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v3.0.0)'
+        required: true
+        default: 'v3.0.0'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -r yolov12/requirements.txt
+      
+      - name: Build executable
+        run: |
+          python build_release.py
+      
+      - name: Upload Windows Executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZDex-Windows
+          path: ZDex-v3.0-Windows.zip
+      
+      - name: Upload Portable Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZDex-Portable
+          path: ZDex-v3.0-Portable.zip
+
+  create-release:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ZDex ${{ github.ref_name }}
+          body: |
+            # 🦁 ZDex ${{ github.ref_name }}
+            
+            ## 📥 Descargas
+            
+            | Archivo | Descripción | Requisitos |
+            |:---|:---|:---|
+            | **ZDex-Windows.zip** | Ejecutable standalone | Windows 10/11, 8GB RAM |
+            | **ZDex-Portable.zip** | Código fuente + scripts | Python 3.10+ |
+            
+            ## 🚀 Instalación Rápida (Windows)
+            
+            1. Descarga `ZDex-Windows.zip`
+            2. Extrae el ZIP
+            3. Ejecuta `ZDex.exe`
+            4. ¡Listo!
+            
+            > ⚠️ Los modelos de IA se descargan automáticamente en la primera ejecución (~500 MB)
+            
+            ## ✨ Novedades
+            
+            - 🎮 Sistema de gamificación con 10 logros
+            - 🦎 Soporte para 3,489 especies
+            - 📊 Framework de evaluación integrado
+            - 🌍 Geolocalización automática
+            - 📚 Integración con Wikipedia
+            
+            ## 📖 Documentación
+            
+            - [README completo](https://github.com/crismoraga/PDI_v2)
+            - [Video Demo](https://youtu.be/MNIEpdeGOdA)
+            
+            ---
+            *Universidad Técnica Federico Santa María — TEL328*
+          files: |
+            ZDex-Windows/ZDex-v3.0-Windows.zip
+            ZDex-Portable/ZDex-v3.0-Portable.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

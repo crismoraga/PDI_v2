@@ -19,6 +19,7 @@
 <br/>
 
 [![Demo](https://img.shields.io/badge/▶_Ver_Demo-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/MNIEpdeGOdA)
+[![Release](https://img.shields.io/badge/📥_Descargar-Release_v3.0-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/crismoraga/PDI_v2/releases/latest)
 [![Stress Test](https://img.shields.io/badge/✓_Stress_Test-100K_Events-success?style=for-the-badge)](#-resultados-del-stress-test)
 [![Species](https://img.shields.io/badge/🦎_Especies-3,489-blue?style=for-the-badge)](taxonomy_release.txt)
 [![Accuracy](https://img.shields.io/badge/🎯_Precisión-87%25-brightgreen?style=for-the-badge)](#-resultados-del-stress-test)
@@ -71,11 +72,40 @@
 
 <br/>
 
+## 📥 Descarga Rápida (Release)
+
+> [!TIP]
+> **¿No quieres instalar nada?** Descarga el release y ejecuta directamente.
+
+<div align="center">
+
+| Archivo | Descripción | Requisitos |
+|:---:|:---|:---|
+| [**⬇️ ZDex-Windows.zip**](https://github.com/crismoraga/PDI_v2/releases/latest) | Ejecutable standalone | Windows 10/11, 8GB RAM |
+| [**⬇️ ZDex-Portable.zip**](https://github.com/crismoraga/PDI_v2/releases/latest) | Código fuente + scripts | Python 3.10+ |
+
+</div>
+
+### 🚀 Instalación en 3 pasos (Windows)
+
+```
+1. Descarga ZDex-Portable.zip desde Releases
+2. Extrae y ejecuta INSTALAR.bat
+3. Ejecuta ZDex.bat → ¡Listo! 🎉
+```
+
+> ⚠️ **Primera ejecución:** Los modelos de IA se descargan automáticamente (~500 MB)
+
+---
+
+<br/>
+
 ## 📋 Tabla de Contenidos
 
 <details open>
 <summary><strong>🗂️ Click para expandir/colapsar</strong></summary>
 
+- [📥 Descarga Rápida (Release)](#-descarga-rápida-release)
 - [✨ Características Principales](#-características-principales)
 - [🚀 Inicio Rápido](#-inicio-rápido)
 - [📦 Instalación Detallada](#-instalación-detallada)
